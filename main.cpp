@@ -193,8 +193,8 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		//上の情報を使ってワールド座標系上の始点と終点を求める
 		Vector3 zStart, zEnd;
 
-		zStart = Vector3(xIndex * kGridEvery - kGridHalfwidth, 0, 5);
-		zEnd = Vector3(xIndex * kGridEvery + kGridHalfwidth, 0, -1);
+		zStart = Vector3(xIndex * kGridEvery - kGridHalfwidth, 0, 2);
+		zEnd = Vector3(xIndex * kGridEvery - kGridHalfwidth, 0, -6);
 
 		//スクリーン座標系まで変換をかける
 		Matrix4x4 startWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, zStart);
@@ -203,8 +203,11 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Matrix4x4 startwvpMatrix = Multiply(startWorldMatrix, viewProjectionMatrix);
 		Matrix4x4 endwvpMatrix = Multiply(startWorldMatrix, viewProjectionMatrix);
 
-		Vector3 startScreen = Transform(zStart, viewportMatrix);
-		Vector3 endScreen = Transform(zEnd, viewportMatrix);
+		Vector3 startLocal = Transform(zStart, startwvpMatrix);
+		Vector3 endLocal = Transform(zEnd, endwvpMatrix);
+
+		Vector3 startScreen = Transform(startLocal, viewportMatrix);
+		Vector3 endScreen = Transform(endLocal, viewportMatrix);
 
 		//変換した座標を使って表示、色は薄い灰色(0xAAAAAAFF)。原点は黒
 		Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, 0xAAAAAAFF);
@@ -217,8 +220,8 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		//上の情報を使ってワールド座標系上の始点と終点を求める
 		Vector3 xStart, xEnd;
 
-		xStart = Vector3(0, zIndex * kGridEvery - kGridHalfwidth, 5);
-		xEnd = Vector3(0, zIndex * kGridEvery + kGridHalfwidth, -1);
+		xStart = Vector3(2, 0, zIndex * kGridEvery - kGridHalfwidth);
+		xEnd = Vector3(-2, 0, zIndex * kGridEvery - kGridHalfwidth);
 
 		//スクリーン座標系まで変換をかける
 		Matrix4x4 startWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, xStart);
@@ -227,8 +230,11 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Matrix4x4 startwvpMatrix = Multiply(startWorldMatrix, viewProjectionMatrix);
 		Matrix4x4 endwvpMatrix = Multiply(endWorldMatrix, viewProjectionMatrix);
 
-		Vector3 startScreen = Transform(xStart, viewportMatrix);
-		Vector3 endScreen = Transform(xEnd, viewportMatrix);
+		Vector3 startLocal = Transform(xStart, startwvpMatrix);
+		Vector3 endLocal = Transform(xEnd, endwvpMatrix);
+
+		Vector3 startScreen = Transform(startLocal, viewportMatrix);
+		Vector3 endScreen = Transform(endLocal, viewportMatrix);
 
 		//変換した座標を使って表示、色は薄い灰色(0xAAAAAAFF)。原点は黒
 		Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, 0xAAAAAAFF);
@@ -258,6 +264,7 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex)
 		{
 			float lon = lonIndex * kLonEvery;//現在の経度
+
 			//world座標系でのa,b,c,を求める
 			Vector3 a, b, c;
 
@@ -288,9 +295,13 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 			Matrix4x4 bwvpMatrix = Multiply(bWorldMatrix, viewProjectionMatrix);
 			Matrix4x4 cwvpMatrix = Multiply(cWorldMatrix, viewProjectionMatrix);
 
-			Vector3 aScreen = Transform(a, viewportMatrix);
-			Vector3 bScreen = Transform(b, viewportMatrix);
-			Vector3 cScreen = Transform(c, viewportMatrix);
+			Vector3 aLocal = Transform(a, awvpMatrix);
+			Vector3 bLocal = Transform(b, bwvpMatrix);
+			Vector3 cLocal = Transform(c, cwvpMatrix);
+
+			Vector3 aScreen = Transform(aLocal, viewportMatrix);
+			Vector3 bScreen = Transform(bLocal, viewportMatrix);
+			Vector3 cScreen = Transform(cLocal, viewportMatrix);
 
 			//ab,bcで線を引く
 			Novice::DrawLine((int)aScreen.x, (int)aScreen.y, (int)bScreen.x, (int)bScreen.y, color);
@@ -310,7 +321,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
 	Sphere sphere{ Vector3{},0.5f };
-	Vector3 cameraTranslate{ 0.0f,0.9f,-6.49f };
+	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
 
 	// キー入力結果を受け取る箱
