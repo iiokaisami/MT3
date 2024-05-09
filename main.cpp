@@ -24,6 +24,36 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 }
 
+// 行列の和
+Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2)
+{
+	Matrix4x4 result;
+	for (int row = 0; row < 4; row++)
+	{
+		for (int col = 0; col < 4; col++)
+		{
+			result.m[row][col] = m1.m[row][col] + m2.m[row][col];
+		}
+	}
+
+	return  result;
+}
+
+// 行列の差
+Matrix4x4 Sub(const Matrix4x4& m1, const Matrix4x4& m2)
+{
+	Matrix4x4 result;
+	for (int row = 0; row < 4; row++)
+	{
+		for (int col = 0; col < 4; col++)
+		{
+			result.m[row][col] = m1.m[row][col] - m2.m[row][col];
+		}
+	}
+
+	return result;
+}
+
 // X軸回転行列
 Matrix4x4 MakeRotateXMatrix(float radian) {
 	Matrix4x4 result;
@@ -171,6 +201,18 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 	return result;
 }
 
+// 転置行列
+Matrix4x4 Transpose(const Matrix4x4& m)
+{
+	Matrix4x4 result;
+	for (int i = 0; i < 4; ++i) {
+		for (int j = 0; j < 4; ++j) {
+			result.m[i][j] = m.m[j][i];
+		}
+	}
+	return result;
+}
+
 // 座標変換
 Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	Vector3 result;
@@ -185,6 +227,10 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	return result;
 }
 
+float Dot(Vector3 v1, Vector3 v2)
+{
+	return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z);
+}
 
 static const int kRowHeight = 20;
 static const int kColumnWidth = 60;
@@ -218,6 +264,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 kLocalVertices[3] = { {0.0f,10.0f,0.0f},{10.0f,-10.0f,0.0f} ,{-10.0f,-10.0f,0.0f} };
 
 	float speed = 1.0f;
+
+	Vector3 ver1;
+	Vector3 ver2;
 
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
@@ -269,6 +318,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			screenVertices[i] = Transform(ndcVertex, viewportMatrix);
 		}
 
+		//三角形の向き
+		ver1 = Cross(screenVertices[0], screenVertices[1]);
+		ver2 = Cross(screenVertices[1], screenVertices[2]);
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -277,9 +330,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		VectorScreenPrintf(0, 0, cross,"Cross");
-		Novice::DrawTriangle(int(screenVertices[0].x), int(screenVertices[0].y), int(screenVertices[1].x), int(screenVertices[1].y),
-			int(screenVertices[2].x), int(screenVertices[2].y), RED, kFillModeSolid);
+		VectorScreenPrintf(0, 0, cross, "Cross");
+
+		if (Dot(cameraPosition, Cross(ver1, ver2)) <= 0) {
+			Novice::DrawTriangle(int(screenVertices[0].x), int(screenVertices[0].y), int(screenVertices[1].x), int(screenVertices[1].y),
+				int(screenVertices[2].x), int(screenVertices[2].y), RED, kFillModeSolid);
+		}
 
 		///
 		/// ↑描画処理ここまで
