@@ -210,7 +210,15 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Vector3 endScreen = Transform(endLocal, viewportMatrix);
 
 		//変換した座標を使って表示、色は薄い灰色(0xAAAAAAFF)。原点は黒
-		Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, 0xAAAAAAFF);
+		if (xIndex == kSubdivision / 2)
+		{
+			Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, BLACK);
+		}
+		else
+		{
+			Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, 0xAAAAAAFF);
+		}
+
 	}
 
 	//左から右も同じように順々に引いていく
@@ -237,7 +245,14 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		Vector3 endScreen = Transform(endLocal, viewportMatrix);
 
 		//変換した座標を使って表示、色は薄い灰色(0xAAAAAAFF)。原点は黒
-		Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, 0xAAAAAAFF);
+		if (zIndex == kSubdivision / 2)
+		{
+			Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, BLACK);
+		}
+		else
+		{
+			Novice::DrawLine((int)startScreen.x, (int)startScreen.y, (int)endScreen.x, (int)endScreen.y, 0xAAAAAAFF);
+		}
 	}
 }
 
@@ -251,8 +266,8 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 {
 	const float pi = 3.1415926535f;
 	const uint32_t kSubdivision = 16;//分割数
-	const float kLonEvery = pi / kSubdivision;   //経度分割1つ分の角度
-	const float kLatEvery = (2 * pi) / kSubdivision;   //緯度分割1つ分の角度
+	const float kLatEvery = pi / kSubdivision;   //経度分割1つ分の角度
+	const float kLonEvery = (2 * pi) / kSubdivision;   //緯度分割1つ分の角度
 
 	//緯度の方向に分割 -π/2 ～ π/2
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex)
