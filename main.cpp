@@ -5,6 +5,35 @@
 #include "assert.h"
 #include "Vector3.h"
 
+//加算
+Vector3 Add(const Vector3& v1, const Vector3& v2) {
+	Vector3 result;
+	result.x = v1.x + v2.x;
+	result.y = v1.y + v2.y;
+	result.z = v1.z + v2.z;
+	return result;
+}
+
+// 減算
+Vector3 Subtract(const Vector3& v1, const Vector3& v2) 
+{
+	Vector3 result;
+	result.x = v1.x - v2.x;
+	result.y = v1.y - v2.y;
+	result.z = v1.z - v2.z;
+	return result;
+}
+
+// スカラー倍
+Vector3 Multiply(float scalar, const Vector3& v)
+{
+	Vector3 result;
+	result.x = scalar * v.x;
+	result.y = scalar * v.y;
+	result.z = scalar * v.z;
+	return result;
+}
+
 // 行列の積
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 result;
@@ -14,6 +43,14 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 			result.m[row][column] = m1.m[row][0] * m2.m[0][column] + m1.m[row][1] * m2.m[1][column] + m1.m[row][2] * m2.m[2][column] + m1.m[row][3] * m2.m[3][column];
 		}
 	}
+	return result;
+}
+
+// 内積
+float Dot(const Vector3& v1, const Vector3& v2) 
+{
+	float result;
+	result = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
 	return result;
 }
 
@@ -256,6 +293,43 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	}
 }
 
+struct Line
+{
+	Vector3 origin;//始点
+	Vector3 diff;  //終点への差分ベクトル
+};
+
+struct Ray
+{
+	Vector3 origin;//始点
+	Vector3 diff;  //終点への差分ベクトル
+};
+
+struct Segment
+{
+	Vector3 origin;//始点
+	Vector3 diff;  //終点への差分ベクトル
+};
+
+Vector3 Project(const Vector3& v1, const Vector3& v2)
+{
+	Vector3 result;
+	float t = Dot(v1, v2) / (sqrtf(Dot(v2,v2))* sqrtf(Dot(v2, v2)));
+
+	result = Multiply(t, v2);
+	
+	return result;
+}
+
+Vector3 ClosestPoint(const Vector3 point, const Segment& segment)
+{
+	Vector3 proja = Project(Subtract(segment.diff, segment.origin), Subtract(point, segment.origin));
+	Vector3 cp = Add(segment.origin, proja);
+	// d = sqrtf((point.x - cp.x) + (point.y - cp.y) + (point.z - cp.z));
+
+	return cp;
+}
+
 struct Sphere
 {
 	Vector3 center;//!<中心点
@@ -284,27 +358,27 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 			Vector3 a, b, c;
 
 			a = {
-				(sphere.center.x + sphere.radius) * std::cos(lat) * std::cos(lon),
-				(sphere.center.y + sphere.radius) * std::sin(lat),
-				(sphere.center.z + sphere.radius) * std::cos(lat) * std::sin(lon)
+				sphere.radius * std::cos(lat) * std::cos(lon),
+				sphere.radius * std::sin(lat),
+				sphere.radius * std::cos(lat) * std::sin(lon)
 			};
 
 			b = {
-				(sphere.center.x + sphere.radius) * std::cos(lat + (pi / kSubdivision)) * std::cos(lon),
-				(sphere.center.y + sphere.radius) * std::sin(lat + (pi / kSubdivision)),
-				(sphere.center.z + sphere.radius) * std::cos(lat + (pi / kSubdivision)) * std::sin(lon)
+				sphere.radius * std::cos(lat + (pi / kSubdivision)) * std::cos(lon),
+				sphere.radius * std::sin(lat + (pi / kSubdivision)),
+				sphere.radius * std::cos(lat + (pi / kSubdivision)) * std::sin(lon)
 			};
 
 			c = {
-				(sphere.center.x + sphere.radius) * std::cos(lat) * std::cos(lon + ((pi * 2) / kSubdivision)),
-				(sphere.center.y + sphere.radius) * std::sin(lat),
-				(sphere.center.z + sphere.radius) * std::cos(lat) * std::sin(lon + ((pi * 2) / kSubdivision))
+				sphere.radius * std::cos(lat) * std::cos(lon + ((pi * 2) / kSubdivision)),
+				sphere.radius * std::sin(lat),
+				sphere.radius * std::cos(lat) * std::sin(lon + ((pi * 2) / kSubdivision))
 			};
 
 			//a,b,cをScreen座標系まで変換...
-			Matrix4x4 aWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, a);
-			Matrix4x4 bWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, b);
-			Matrix4x4 cWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, c);
+			Matrix4x4 aWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, sphere.center);
+			Matrix4x4 bWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, sphere.center);
+			Matrix4x4 cWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, sphere.center);
 
 			Matrix4x4 awvpMatrix = Multiply(aWorldMatrix, viewProjectionMatrix);
 			Matrix4x4 bwvpMatrix = Multiply(bWorldMatrix, viewProjectionMatrix);
@@ -335,9 +409,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
-	Sphere sphere{ Vector3{},0.5f };
 	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
+
+	Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f,2.0f,2.0f} };
+	Vector3 point{ -1.5f,0.6f,0.6f };
+	
+	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
+	Vector3 closestPoint = ClosestPoint(point, segment);
+
+	Sphere pointsphere{ point,0.01f };//1cmの球を描画
+	Sphere closestPointSphere{ closestPoint,0.01f };
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -357,10 +439,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		ImGui::Begin("window");
-		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
-		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("Point", &point.x, 0.01f);
+		ImGui::DragFloat3("Segment origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("Segment diff", &segment.diff.x, 0.01f);
+		ImGui::DragFloat3("Project", &project.x, 0.01f);
+		ImGui::InputFloat3("Project", &project.x, "%.3", ImGuiInputTextFlags_ReadOnly);
 		ImGui::End();
 
 		Matrix4x4 camelaMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
@@ -368,6 +451,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatriix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
+
+		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
 
 		///
 		/// ↑更新処理ここまで
@@ -378,7 +464,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, 0x000000ff);
+		Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, WHITE);
+		DrawSphere(pointsphere, viewProjectionMatrix, viewportMatrix, RED);
+		DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, BLACK);
 
 		///
 		/// ↑描画処理ここまで
