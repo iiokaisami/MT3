@@ -260,6 +260,7 @@ struct Sphere
 {
 	Vector3 center;//!<中心点
 	float radius;  //!<半径
+	uint32_t color;//色
 };
 
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color)
@@ -327,7 +328,25 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 
 }
 
-const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_01_02_確認課題";
+bool isColision(const Sphere& s1, const Sphere& s2)
+{
+	float dis = s1.radius + s2.radius;
+
+	Vector3 dist = { s1.center.x - s2.center.x ,s1.center.y - s2.center.y,s1.center.z - s2.center.z };
+
+	float distance = sqrtf(dist.x * dist.x+ dist.y * dist.y+ dist.z * dist.z);
+
+	if (distance <= dis)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_01_確認課題";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -335,9 +354,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
-	Sphere sphere{ Vector3{},0.5f };
+	Sphere sphere[2]{
+		{ Vector3{},0.5f ,0x000000ff } ,
+		{Vector3{},0.1f,0x000000ff} };
 	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
+
+	float cameraSpeed = 0.01f;
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -359,9 +382,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Begin("window");
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("SphereCenter", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("SphereRadius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("SphereCenter", &sphere1.center.x, 0.01f);
+		ImGui::DragFloat("SphereRadius", &sphere1.radius, 0.01f);
 		ImGui::End();
+
+		if (keys[DIK_W])
+		{
+			cameraTranslate.z += cameraSpeed;
+		}
+		if (keys[DIK_S])
+		{
+			cameraTranslate.z -= cameraSpeed;
+		}
+		if (keys[DIK_A])
+		{
+			cameraTranslate.x += cameraSpeed;
+		}
+		if (keys[DIK_D])
+		{
+			cameraTranslate.x -= cameraSpeed;
+		}
+		if (keys[DIK_Q])
+		{
+			cameraTranslate.y += cameraSpeed;
+		}
+		if (keys[DIK_E])
+		{
+			cameraTranslate.y -= cameraSpeed;
+		}
 
 		Matrix4x4 camelaMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
 		Matrix4x4 viewMatriix = Inverse(camelaMatrix);
@@ -378,7 +426,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, 0x000000ff);
+		DrawSphere(sphere1, viewProjectionMatrix, viewportMatrix,sphere1.color );
 
 		///
 		/// ↑描画処理ここまで
