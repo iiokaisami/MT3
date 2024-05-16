@@ -323,7 +323,7 @@ Vector3 Project(const Vector3& v1, const Vector3& v2)
 
 Vector3 ClosestPoint(const Vector3 point, const Segment& segment)
 {
-	Vector3 proja = Project(Subtract(segment.diff, segment.origin), Subtract(point, segment.origin));
+	Vector3 proja = Project(point,segment.diff);
 	Vector3 cp = Add(segment.origin, proja);
 	// d = sqrtf((point.x - cp.x) + (point.y - cp.y) + (point.z - cp.z));
 
@@ -414,12 +414,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f,2.0f,2.0f} };
 	Vector3 point{ -1.5f,0.6f,0.6f };
-	
-	Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
-	Vector3 closestPoint = ClosestPoint(point, segment);
-
-	Sphere pointsphere{ point,0.01f };//1cmの球を描画
-	Sphere closestPointSphere{ closestPoint,0.01f };
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -437,6 +431,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
+
+		Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
+		Vector3 closestPoint = ClosestPoint(point, segment);
+
+		Sphere pointsphere{ point,0.01f };//1cmの球を描画
+		Sphere closestPointSphere{ closestPoint,0.01f };
 
 		ImGui::Begin("window");
 		ImGui::DragFloat3("Point", &point.x, 0.01f);
