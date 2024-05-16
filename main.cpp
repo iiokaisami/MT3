@@ -230,8 +230,8 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		//上の情報を使ってワールド座標系上の始点と終点を求める
 		Vector3 zStart, zEnd;
 
-		zStart = Vector3(xIndex * kGridEvery - kGridHalfwidth, 0, 2);
-		zEnd = Vector3(xIndex * kGridEvery - kGridHalfwidth, 0, -6);
+		zStart = Vector3(xIndex * kGridEvery / 2 - kGridHalfwidth + 1, 0, 1);
+		zEnd = Vector3(xIndex * kGridEvery / 2 - kGridHalfwidth + 1, 0, -3);
 
 		//スクリーン座標系まで変換をかける
 		Matrix4x4 startWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, zStart);
@@ -265,8 +265,8 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 		//上の情報を使ってワールド座標系上の始点と終点を求める
 		Vector3 xStart, xEnd;
 
-		xStart = Vector3(2, 0, zIndex * kGridEvery - kGridHalfwidth);
-		xEnd = Vector3(-2, 0, zIndex * kGridEvery - kGridHalfwidth);
+		xStart = Vector3(1, 0, zIndex * kGridEvery / 2 - kGridHalfwidth + 1);
+		xEnd = Vector3(-1, 0, zIndex * kGridEvery / 2 - kGridHalfwidth + 1);
 
 		//スクリーン座標系まで変換をかける
 		Matrix4x4 startWorldMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, xStart);
@@ -323,7 +323,7 @@ Vector3 Project(const Vector3& v1, const Vector3& v2)
 
 Vector3 ClosestPoint(const Vector3 point, const Segment& segment)
 {
-	Vector3 proja = Project(Subtract(point, segment.origin), Subtract(segment.diff, segment.origin));
+	Vector3 proja = Project(Subtract(point, segment.origin), Subtract(Add(segment.origin, segment.diff), segment.origin));
 	Vector3 cp = Add(segment.origin, proja);
 	// d = sqrtf((point.x - cp.x) + (point.y - cp.y) + (point.z - cp.z));
 
@@ -401,7 +401,7 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 
 }
 
-const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_01_02_確認課題";
+const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_00_確認課題";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
