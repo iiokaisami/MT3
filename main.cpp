@@ -314,7 +314,7 @@ struct Segment
 Vector3 Project(const Vector3& v1, const Vector3& v2)
 {
 	Vector3 result;
-	float t = Dot(v1, v2) / (sqrtf(Dot(v2,v2))* sqrtf(Dot(v2, v2)));
+	float t = Dot(v1, v2) / (sqrtf(powf(Dot(v2, v2), 2)));
 
 	result = Multiply(t, v2);
 	
@@ -323,7 +323,7 @@ Vector3 Project(const Vector3& v1, const Vector3& v2)
 
 Vector3 ClosestPoint(const Vector3 point, const Segment& segment)
 {
-	Vector3 proja = Project(point,segment.diff);
+	Vector3 proja = Project(Subtract(point, segment.origin), Subtract(segment.diff, segment.origin));
 	Vector3 cp = Add(segment.origin, proja);
 	// d = sqrtf((point.x - cp.x) + (point.y - cp.y) + (point.z - cp.z));
 
