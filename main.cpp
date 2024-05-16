@@ -334,7 +334,7 @@ bool isColision(const Sphere& s1, const Sphere& s2)
 
 	Vector3 dist = { s1.center.x - s2.center.x ,s1.center.y - s2.center.y,s1.center.z - s2.center.z };
 
-	float distance = sqrtf(dist.x * dist.x+ dist.y * dist.y+ dist.z * dist.z);
+	float distance = sqrtf(powf(dist.x, 2) + powf(dist.y, 2) + powf(dist.z, 2));
 
 	if (distance <= dis)
 	{
@@ -355,8 +355,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
 	Sphere sphere[2]{
-		{ Vector3{},0.5f ,0x000000ff } ,
-		{Vector3{},0.1f,0x000000ff} };
+		{ Vector3{},0.5f ,0xffffffff } ,
+		{{2.0f,0.0f,1.0f},0.1f,0xffffffff} };
 	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
 
@@ -382,8 +382,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Begin("window");
 		ImGui::DragFloat3("CameraTranslate", &cameraTranslate.x, 0.01f);
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("SphereCenter", &sphere1.center.x, 0.01f);
-		ImGui::DragFloat("SphereRadius", &sphere1.radius, 0.01f);
+		ImGui::DragFloat3("Sphere[0]Center", &sphere[0].center.x, 0.01f);
+		ImGui::DragFloat("Sphere[0]Radius", &sphere[0].radius, 0.01f);
+		ImGui::DragFloat3("Sphere[1]Center", &sphere[1].center.x, 0.01f);
+		ImGui::DragFloat("Sphere[1]Radius", &sphere[1].radius, 0.01f);
 		ImGui::End();
 
 		if (keys[DIK_W])
@@ -396,11 +398,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		if (keys[DIK_A])
 		{
-			cameraTranslate.x += cameraSpeed;
+			cameraTranslate.x -= cameraSpeed;
 		}
 		if (keys[DIK_D])
 		{
-			cameraTranslate.x -= cameraSpeed;
+			cameraTranslate.x += cameraSpeed;
 		}
 		if (keys[DIK_Q])
 		{
@@ -417,6 +419,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatriix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
+		if (isColision(sphere[0], sphere[1]))
+		{
+			sphere[0].color = RED;
+		}
+		else
+		{
+			sphere[0].color = WHITE;
+		}
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -426,7 +437,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		DrawSphere(sphere1, viewProjectionMatrix, viewportMatrix,sphere1.color );
+		DrawSphere(sphere[0], viewProjectionMatrix, viewportMatrix, sphere[0].color);
+		DrawSphere(sphere[1], viewProjectionMatrix, viewportMatrix, sphere[1].color);
 
 		///
 		/// ↑描画処理ここまで
