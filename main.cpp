@@ -6,7 +6,8 @@
 #include "Vector3.h"
 
 //加算
-Vector3 Add(const Vector3& v1, const Vector3& v2) {
+Vector3 Add(const Vector3& v1, const Vector3& v2) 
+{
 	Vector3 result;
 	result.x = v1.x + v2.x;
 	result.y = v1.y + v2.y;
@@ -35,7 +36,8 @@ Vector3 Multiply(float scalar, const Vector3& v)
 }
 
 // 行列の積
-Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
+Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
+{
 	Matrix4x4 result;
 
 	for (int row = 0; row < 4; row++) {
@@ -55,7 +57,8 @@ float Dot(const Vector3& v1, const Vector3& v2)
 }
 
 // X軸回転行列
-Matrix4x4 MakeRotateXMatrix(float radian) {
+Matrix4x4 MakeRotateXMatrix(float radian) 
+{
 	Matrix4x4 result;
 	result = {
 		1.0f, 0.0f, 0.0f, 0.0f, 0.0f, std::cos(radian), std::sin(radian), 0.0f, 0.0f, -std::sin(radian), std::cos(radian), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
@@ -65,7 +68,8 @@ Matrix4x4 MakeRotateXMatrix(float radian) {
 }
 
 // Y軸回転行列
-Matrix4x4 MakeRotateYMatrix(float radian) {
+Matrix4x4 MakeRotateYMatrix(float radian) 
+{
 	Matrix4x4 result;
 	result = {
 		std::cos(radian), 0.0f, -std::sin(radian), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, std::sin(radian), 0.0f, std::cos(radian), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
@@ -75,7 +79,8 @@ Matrix4x4 MakeRotateYMatrix(float radian) {
 }
 
 // Z軸回転行列
-Matrix4x4 MakeRotateZMatrix(float radian) {
+Matrix4x4 MakeRotateZMatrix(float radian)
+{
 	Matrix4x4 result;
 	result = {
 		std::cos(radian), std::sin(radian), 0.0f, 0.0f, -std::sin(radian), std::cos(radian), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
@@ -85,7 +90,8 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 }
 
 // 3次元のアフィン変換行列
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate)
+{
 	Matrix4x4 result;
 	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
 	Matrix4x4 rotateYMatrix = MakeRotateYMatrix(rotate.y);
@@ -114,7 +120,8 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 }
 
 // 逆行列
-Matrix4x4 Inverse(const Matrix4x4& m) {
+Matrix4x4 Inverse(const Matrix4x4& m) 
+{
 	Matrix4x4 result;
 	float a;
 	Matrix4x4 b;
@@ -184,7 +191,8 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
 }
 
 // 透視投影行列
-Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
+Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip)
+{
 	Matrix4x4 result;
 	result = {
 		1 / aspectRatio * (1 / std::tan(fovY / 2)), 0.0f, 0.0f, 0.0f, 0.0f, 1 / std::tan(fovY / 2), 0.0f, 0.0f, 0.0f, 0.0f, farClip / (farClip - nearClip), 1.0f, 0.0f, 0.0f,
@@ -194,7 +202,8 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 	return result;
 }
 
-Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
+Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth)
+{
 	Matrix4x4 result;
 	result = { width / 2, 0.0f, 0.0f, 0.0f, 0.0f, -height / 2, 0.0f, 0.0f, 0.0f, 0.0f, maxDepth - minDepth, 0.0f, left + (width / 2), top + (height / 2), minDepth, 1.0f };
 
@@ -202,7 +211,8 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 }
 
 // 座標変換
-Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
+Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix)
+{
 	Vector3 result;
 	result.x = vector.x * matrix.m[0][0] + vector.y * matrix.m[1][0] + vector.z * matrix.m[2][0] + 1.0f * matrix.m[3][0];
 	result.y = vector.x * matrix.m[0][1] + vector.y * matrix.m[1][1] + vector.z * matrix.m[2][1] + 1.0f * matrix.m[3][1];
@@ -214,6 +224,26 @@ Vector3 Transform(const Vector3& vector, const Matrix4x4& matrix) {
 	result.z /= w;
 	return result;
 }
+
+// 正規化|
+Vector3 Normalize(const Vector3& v)
+{
+	Vector3 result;
+	result.x = v.x / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+	result.y = v.y / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+	result.z = v.z / sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
+	return result;
+}
+
+// クロス値
+Vector3 Cross(const Vector3& v1, const Vector3& v2)
+{
+	Vector3 result;
+	result = { v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x };
+
+	return result;
+}
+
 
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
@@ -293,47 +323,11 @@ void DrawGrid(const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMa
 	}
 }
 
-struct Line
-{
-	Vector3 origin;//始点
-	Vector3 diff;  //終点への差分ベクトル
-};
-
-struct Ray
-{
-	Vector3 origin;//始点
-	Vector3 diff;  //終点への差分ベクトル
-};
-
-struct Segment
-{
-	Vector3 origin;//始点
-	Vector3 diff;  //終点への差分ベクトル
-};
-
-Vector3 Project(const Vector3& v1, const Vector3& v2)
-{
-	Vector3 result;
-	float t = Dot(v1, v2) / (sqrtf(powf(Dot(v2, v2), 2)));
-
-	result = Multiply(t, v2);
-	
-	return result;
-}
-
-Vector3 ClosestPoint(const Vector3 point, const Segment& segment)
-{
-	Vector3 proja = Project(Subtract(point, segment.origin), Subtract(Add(segment.origin, segment.diff), segment.origin));
-	Vector3 cp = Add(segment.origin, proja);
-	// d = sqrtf((point.x - cp.x) + (point.y - cp.y) + (point.z - cp.z));
-
-	return cp;
-}
-
 struct Sphere
 {
 	Vector3 center;//!<中心点
 	float radius;  //!<半径
+	uint32_t color;//色
 };
 
 void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color)
@@ -401,7 +395,60 @@ void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, con
 
 }
 
-const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_00_確認課題";
+struct Plane
+{
+	Vector3 normal; // !< 法線
+	float distance; // !< 距離
+};
+
+Vector3 Perpendicular(const Vector3& vector)
+{
+	if (vector.x != 0.0f || vector.y != 0.0f)
+	{
+		return { -vector.y,vector.x,0.0f };
+	}
+	return { 0.0f,-vector.z,vector.y };
+}
+
+bool isColision(const Sphere& sphere, const Plane& plane)
+{
+	float k = sqrtf(powf(Dot(plane.normal, sphere.center) - plane.distance, 2));
+
+	if (k <= sphere.radius)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void DrawPlane(const Plane& plane, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color)
+{
+	Vector3 center = Multiply(plane.distance, plane.normal); // 1
+	Vector3 perpendiculars[4];
+	perpendiculars[0] = Normalize(Perpendicular(plane.normal)); // 2
+	perpendiculars[1] = { -perpendiculars[0].x,-perpendiculars[0].y,-perpendiculars[0].z }; // 3
+	perpendiculars[2] = Cross(plane.normal, perpendiculars[0]); // 4
+	perpendiculars[3] = { -perpendiculars[2].x,-perpendiculars[2].y,-perpendiculars[2].x }; // 5
+
+	// 6
+	Vector3 points[4];
+	for (int32_t index = 0; index < 4; ++index)
+	{
+		Vector3 extend = Multiply(2.0f, perpendiculars[index]);
+		Vector3 point = Add(center, extend);
+		points[index] = Transform(Transform(point, viewProjectionMatrix), viewportMatrix);
+	}
+	//points をそれぞれ結んでDraw で矩形を描画する。DrawTringleを使って塗りつぶしても良いが、DepthがないのでMT3では分かりずらい
+	Novice::DrawLine((int)points[0].x, (int)points[0].y, (int)points[3].x, (int)points[3].y, RED);
+	Novice::DrawLine((int)points[0].x, (int)points[0].y, (int)points[2].x, (int)points[2].y, color);
+	Novice::DrawLine((int)points[3].x, (int)points[3].y, (int)points[1].x, (int)points[1].y, BLUE);
+	Novice::DrawLine((int)points[3].x, (int)points[3].y, (int)points[2].x, (int)points[2].y, BLACK);
+}
+
+const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_02_確認課題";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -412,8 +459,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
 
-	Segment segment{ {-2.0f,-1.0f,0.0f},{3.0f,2.0f,2.0f} };
-	Vector3 point{ -1.5f,0.6f,0.6f };
+	Plane plane{ {0.0f,1.0f,0.0f},1.0f };
+	Sphere sphere{ Vector3{},0.5f,WHITE };
+
+	float cameraSpeed = 0.01f;
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -432,19 +481,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		Vector3 project = Project(Subtract(point, segment.origin), segment.diff);
-		Vector3 closestPoint = ClosestPoint(point, segment);
-
-		Sphere pointsphere{ point,0.01f };//1cmの球を描画
-		Sphere closestPointSphere{ closestPoint,0.01f };
-
 		ImGui::Begin("window");
-		ImGui::DragFloat3("Point", &point.x, 0.01f);
-		ImGui::DragFloat3("Segment origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment diff", &segment.diff.x, 0.01f);
-		ImGui::DragFloat3("Project", &project.x, 0.01f);
-		ImGui::InputFloat3("Project", &project.x, "%.3", ImGuiInputTextFlags_ReadOnly);
+		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+		ImGui::DragFloat3("Sphere.Center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("Sphere.Radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("Plane.Normal", &plane.normal.x, 0.01f);
+		ImGui::DragFloat("Plane.Distance", &plane.distance, 0.01f);
 		ImGui::End();
+
+		plane.normal = Normalize(plane.normal);
+
+		if (keys[DIK_W])
+		{
+			cameraTranslate.z += cameraSpeed;
+		}
+		if (keys[DIK_S])
+		{
+			cameraTranslate.z -= cameraSpeed;
+		}
+		if (keys[DIK_A])
+		{
+			cameraTranslate.x -= cameraSpeed;
+		}
+		if (keys[DIK_D])
+		{
+			cameraTranslate.x += cameraSpeed;
+		}
+		if (keys[DIK_Q])
+		{
+			cameraTranslate.y += cameraSpeed;
+		}
+		if (keys[DIK_E])
+		{
+			cameraTranslate.y -= cameraSpeed;
+		}
 
 		Matrix4x4 camelaMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
 		Matrix4x4 viewMatriix = Inverse(camelaMatrix);
@@ -452,8 +522,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatriix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
-		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+		if (isColision(sphere, plane))
+		{
+			sphere.color = RED;
+		}
+		else
+		{
+			sphere.color = WHITE;
+		}
 
 		///
 		/// ↑更新処理ここまで
@@ -464,9 +540,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, WHITE);
-		DrawSphere(pointsphere, viewProjectionMatrix, viewportMatrix, RED);
-		DrawSphere(closestPointSphere, viewProjectionMatrix, viewportMatrix, BLACK);
+
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, sphere.color);
+		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, WHITE);
 
 		///
 		/// ↑描画処理ここまで
