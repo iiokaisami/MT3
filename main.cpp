@@ -402,7 +402,7 @@ bool isColision(const Segment& segment, const Plane& plane)
 	{
 		return true;
 	}
-	else
+	else//0~1
 	{
 		return false;
 	}
