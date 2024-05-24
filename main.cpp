@@ -374,16 +374,18 @@ bool isColision(const Segment& segment, const Triangle& triangle)
 	Vector3 normal = { 0.0f,1.0f,0.0 };
 	float distance = 1.0f;
 
+	normal = Normalize(normal);
+
 	//法線と線の内積
 	float dot = Dot(normal, segment.diff);
-
-	Vector3 v01 = Subtract(triangle.vertices[1], triangle.vertices[0]);
-	Vector3 v12 = Subtract(triangle.vertices[2], triangle.vertices[1]);
-	Vector3 v20 = Subtract(triangle.vertices[0], triangle.vertices[2]);
 
 	float t = (distance - Dot(segment.origin, normal)) / dot;
 
 	Vector3 p = Add(segment.origin, Multiply(t, segment.diff));
+
+	Vector3 v01 = Subtract(triangle.vertices[1], triangle.vertices[0]);
+	Vector3 v12 = Subtract(triangle.vertices[2], triangle.vertices[1]);
+	Vector3 v20 = Subtract(triangle.vertices[0], triangle.vertices[2]);
 
 	Vector3 v0p = Subtract(p, triangle.vertices[0]);
 	Vector3 v1p = Subtract(p, triangle.vertices[1]);
@@ -399,12 +401,10 @@ bool isColision(const Segment& segment, const Triangle& triangle)
 		Dot(cross12, normal) >= 0.0f &&
 		Dot(cross20, normal) >= 0.0f)
 	{
-		normal = Normalize(normal);
 		return true;
 	}
 	else
 	{
-		normal = Normalize(normal);
 		return false;
 	}
 }
