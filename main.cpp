@@ -369,23 +369,24 @@ void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatri
 	Novice::DrawTriangle((int)Screen1.x, (int)Screen1.y, (int)Screen2.x, (int)Screen2.y, (int)Screen3.x, (int)Screen3.y, color, kFillModeWireFrame);
 }
 
-bool isColision(const Segment& segment, const Triangle& triangle)
+bool isCollision(const Segment& segment, const Triangle& triangle)//平面求めてから判定を取るー＞三角形との積をなんやかんや
 {
-	Vector3 normal = { 0.0f,1.0f,0.0 };
-	float distance = 1.0f;
-
-	normal = Normalize(normal);
-
-	//法線と線の内積
-	float dot = Dot(normal, segment.diff);
-
-	float t = (distance - Dot(segment.origin, normal)) / dot;
-
-	Vector3 p = Add(segment.origin, Multiply(t, segment.diff));
 
 	Vector3 v01 = Subtract(triangle.vertices[1], triangle.vertices[0]);
 	Vector3 v12 = Subtract(triangle.vertices[2], triangle.vertices[1]);
 	Vector3 v20 = Subtract(triangle.vertices[0], triangle.vertices[2]);
+
+	Vector3 n = Normalize(Cross(v01, v12));
+
+	//distance
+	float d = Dot(triangle.vertices[0], n);
+
+	//法線と線の内積
+	float dot = Dot(n, segment.diff);
+
+	float t = (d - Dot(segment.origin, n)) / dot;
+
+	Vector3 p = Add(segment.origin, Multiply(t, segment.diff));
 
 	Vector3 v0p = Subtract(p, triangle.vertices[0]);
 	Vector3 v1p = Subtract(p, triangle.vertices[1]);
@@ -397,9 +398,9 @@ bool isColision(const Segment& segment, const Triangle& triangle)
 	Vector3 cross20 = Cross(v20, v0p);
 
 	//衝突判定
-	if (Dot(cross01, normal) >= 0.0f &&
-		Dot(cross12, normal) >= 0.0f &&
-		Dot(cross20, normal) >= 0.0f)
+	if (Dot(cross01, n) >= 0.0f &&
+		Dot(cross12, n) >= 0.0f &&
+		Dot(cross20, n) >= 0.0f)
 	{
 		return true;
 	}
@@ -490,7 +491,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
 
 
-		if (isColision(segment, triangle))
+		if (isCollision(segment, triangle))
 		{
 			segment.color = RED;
 		}
