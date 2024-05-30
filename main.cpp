@@ -378,13 +378,17 @@ bool isCollision(const Segment& segment, const Triangle& triangle)//平面求め
 
 	Vector3 n = Normalize(Cross(v01, v12));
 
-	//distance
 	float d = Dot(triangle.vertices[0], n);
 
 	//法線と線の内積
 	float dot = Dot(n, segment.diff);
 
 	float t = (d - Dot(segment.origin, n)) / dot;
+
+	if (!(t <= 1 && t >= 0))
+	{
+		return false;
+	}
 
 	Vector3 p = Add(segment.origin, Multiply(t, segment.diff));
 
