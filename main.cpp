@@ -349,24 +349,17 @@ struct Triangle
 
 void DrawTriangle(const Triangle& triangle, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color)
 {
-	Matrix4x4 WorldMatrix1 = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, triangle.vertices[0]);
-	Matrix4x4 WorldMatrix2 = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, triangle.vertices[1]);
-	Matrix4x4 WorldMatrix3 = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, triangle.vertices[2]);
+	//スクリーン座標に変換
+	Vector3 transform[3];
+	Vector3 screen[3];
 
-	Matrix4x4 wvpMatrix1 = Multiply(WorldMatrix1, viewProjectionMatrix);
-	Matrix4x4 wvpMatrix2 = Multiply(WorldMatrix2, viewProjectionMatrix);
-	Matrix4x4 wvpMatrix3 = Multiply(WorldMatrix3, viewProjectionMatrix);
+	for (int i = 0; i < 3; ++i) {
+		transform[i] = Transform(triangle.vertices[i], viewProjectionMatrix);
+		screen[i] = Transform(transform[i], viewportMatrix);
+	}
 
-	Vector3 Local1 = Transform(triangle.vertices[0], wvpMatrix1);
-	Vector3 Local2 = Transform(triangle.vertices[1], wvpMatrix2);
-	Vector3 Local3 = Transform(triangle.vertices[2], wvpMatrix3);
-
-	Vector3 Screen1 = Transform(Local1, viewportMatrix);
-	Vector3 Screen2 = Transform(Local2, viewportMatrix);
-	Vector3 Screen3 = Transform(Local3, viewportMatrix);
-
-	//points をそれぞれ結んでDraw で矩形を描画する。DrawTringleを使って塗りつぶしても良いが、DepthがないのでMT3では分かりずらい
-	Novice::DrawTriangle((int)Screen1.x, (int)Screen1.y, (int)Screen2.x, (int)Screen2.y, (int)Screen3.x, (int)Screen3.y, color, kFillModeWireFrame);
+	//三角形の描画
+	Novice::DrawTriangle((int)screen[0].x, (int)screen[0].y,(int)screen[1].x, (int)screen[1].y,(int)screen[2].x, (int)screen[2].y,color, kFillModeWireFrame);
 }
 
 bool isCollision(const Segment& segment, const Triangle& triangle)//平面求めてから判定を取るー＞三角形との積をなんやかんや
@@ -385,9 +378,9 @@ bool isCollision(const Segment& segment, const Triangle& triangle)//平面求め
 
 	float t = (d - Dot(segment.origin, n)) / dot;
 
-	if (!(t <= 1 && t >= 0))
+	if (!(t <= 1 && t >= 0)) 
 	{
-		return false;
+		return false; 
 	}
 
 	Vector3 p = Add(segment.origin, Multiply(t, segment.diff));
@@ -396,20 +389,18 @@ bool isCollision(const Segment& segment, const Triangle& triangle)//平面求め
 	Vector3 v1p = Subtract(p, triangle.vertices[1]);
 	Vector3 v2p = Subtract(p, triangle.vertices[2]);
 
-	//各辺を結んだベクトルと、頂点と衝突点pを結んだベクトルのクロス積を取る
+	//各辺を結んだベクトル、頂点、衝突点pを結んだベクトルのクロス積を取る
 	Vector3 cross01 = Cross(v01, v1p);
 	Vector3 cross12 = Cross(v12, v2p);
 	Vector3 cross20 = Cross(v20, v0p);
 
 	//衝突判定
 	if (Dot(cross01, n) >= 0.0f &&
-		Dot(cross12, n) >= 0.0f &&
-		Dot(cross20, n) >= 0.0f)
-	{
+		Dot(cross12, n) >= 0.0f && 
+		Dot(cross20, n) >= 0.0f) {
 		return true;
 	}
-	else
-	{
+	else {
 		return false;
 	}
 }
@@ -426,9 +417,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
 
 	Triangle triangle;
-	triangle.vertices[0] = { -0.5f,0.0f,0.0f };
-	triangle.vertices[1] = { 0.0f,0.5f,0.0f };
-	triangle.vertices[2] = { 0.5f,0.0f,0.0f };
+	triangle.vertices[0] = { -1.0f,0.0f,0.0f };
+	triangle.vertices[1] = { 0.0f,1.0f,0.0f };
+	triangle.vertices[2] = { 1.0f,0.0f,0.0f };
 
 	Segment segment{ { -0.45f,0.41f,0.0f},{1.0f,0.58f,0.0f},WHITE };
 
@@ -450,15 +441,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
-
-		ImGui::Begin("window");
-		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::DragFloat3("Triangle.v0", &triangle.vertices[0].x, 0.01f);
-		ImGui::DragFloat3("Triangle.v1", &triangle.vertices[1].x, 0.01f);
-		ImGui::DragFloat3("Triangle.v2", &triangle.vertices[2].x, 0.01f);
-		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
-		ImGui::End();
 
 		if (keys[DIK_W])
 		{
@@ -485,10 +467,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			cameraTranslate.y -= cameraSpeed;
 		}
 
-		Matrix4x4 camelaMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
-		Matrix4x4 viewMatriix = Inverse(camelaMatrix);
+		Matrix4x4 cameraMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
+		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
-		Matrix4x4 viewProjectionMatrix = Multiply(viewMatriix, projectionMatrix);
+		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
 		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
@@ -503,6 +485,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			segment.color = WHITE;
 		}
+
+
+		ImGui::Begin("window");
+		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+		ImGui::DragFloat3("Triangle.v0", &triangle.vertices[0].x, 0.01f);
+		ImGui::DragFloat3("Triangle.v1", &triangle.vertices[1].x, 0.01f);
+		ImGui::DragFloat3("Triangle.v2", &triangle.vertices[2].x, 0.01f);
+		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
+		ImGui::End();
 
 		///
 		/// ↑更新処理ここまで
