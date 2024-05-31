@@ -245,6 +245,18 @@ Vector3 Cross(const Vector3& v1, const Vector3& v2)
 	return result;
 }
 
+// 距離
+float Length(const Vector3& v1, const Vector3& v2)
+{
+	Vector3 distance;
+	float d;
+
+	distance = Subtract(v2, v1);
+	d = sqrtf(powf(distance.x, 2) + powf(distance.y, 2) + powf(distance.z, 2));
+
+	return d;
+}
+
 
 static const int kWindowWidth = 1280;
 static const int kWindowHeight = 720;
@@ -700,10 +712,10 @@ bool isCollision(const AABB& aabb, const Sphere& sphere)
 	 std::clamp(sphere.center.z,aabb.min.z,aabb.max.z) };
 
 	//最接点と球の中心との距離を求める
-	float distance = sqrtf(Dot(closestPoint , sphere.center));
+	float distance = Length(closestPoint, sphere.center);
 
 	//距離が半径よりも小さければ衝突
-	if (distance <= sphere.radius)
+	if (distance < sphere.radius)
 	{
 		return true;
 	}
@@ -716,7 +728,7 @@ bool isCollision(const AABB& aabb, const Sphere& sphere)
 
 /////////////////////////////
 
-const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_05_確認課題";
+const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_06_確認課題";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
