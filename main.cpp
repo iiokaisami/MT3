@@ -353,7 +353,6 @@ struct Segment
 {
 	Vector3 origin;//始点
 	Vector3 diff;  //終点への差分ベクトル
-	uint32_t color;//色
 };
 
 struct Sphere
@@ -408,6 +407,16 @@ Vector3 Perpendicular(const Vector3& vector)
 		return { -vector.y,vector.x,0.0f };
 	}
 	return { 0.0f,-vector.z,vector.y };
+}
+
+//衝突点の媒介変数
+float CreateParametricVariable(const float d, const Vector3& n, const Segment& segment)
+{
+	float t;
+	
+	t = d - Dot(segment.origin, n) / Dot(segment.diff, n);
+
+	return t;
 }
 
 /////////////////////////////
@@ -726,9 +735,34 @@ bool isCollision(const AABB& aabb, const Sphere& sphere)
 
 }
 
+//AABB・線
+bool isCollision(const AABB& aabb, const Segment segment)
+{
+	Vector3 nX = { 1.0f, 0.0f, 0.0f };
+	
+
+
+	//AABBとの衝突点（貫通点）のtが小さい方
+	float tmin = max(max(tNearX, tNearY), tNearZ);
+
+	//AABBとの衝突点（貫通点）のtが大きい方
+	float tmax = min(min(tFarX, tFarY), tFarZ);
+
+	//衝突判定
+	if (tmin <= tmax)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
 /////////////////////////////
 
-const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_06_確認課題";
+const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_07_確認課題";
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -739,10 +773,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	AABB aabb
 	{
 		.min{-0.5f,-0.5f,-0.5f},
-		.max{0.0f,0.0f,0.0f},
+		.max{0.5f,0.5f,0.5f},
 	};
 
-	Sphere sphere{ Vector3{},0.5f };
+	Segment segment{
+		.origin{-0.7f,0.3f,0.0f},
+		.diff{2.0f,-0.5f,0.0f}
+	};
 
 	uint32_t color1 = WHITE;
 	uint32_t color2 = WHITE;
@@ -804,6 +841,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		aabb.min.y = (std::min)(aabb.min.y, aabb.min.y);
 		aabb.min.z = (std::min)(aabb.min.z, aabb.min.z);
 		
+		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
+		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
+
 
 		if (isCollision(aabb,sphere))
 		{
@@ -819,8 +859,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 		ImGui::DragFloat3("aabb.min", &aabb.min.x, 0.01f);
 		ImGui::DragFloat3("aabb.max", &aabb.max.x, 0.01f);
-		ImGui::DragFloat3("Sphere.Center", &sphere.center.x, 0.01f);
-		ImGui::DragFloat("Sphere.Radius", &sphere.radius, 0.01f);
+		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
+		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
 		ImGui::End();
 
 		///
@@ -833,7 +873,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, color1);
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color2);
+		Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color2);
 
 		///
 		/// ↑描画処理ここまで
