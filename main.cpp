@@ -737,10 +737,35 @@ bool isCollision(const AABB& aabb, const Sphere& sphere)
 
 //AABB・線
 bool isCollision(const AABB& aabb, const Segment segment)
-{
-	Vector3 nX = { 1.0f, 0.0f, 0.0f };
-	
+{	
+	Vector3 nX = { 1,0,0 };
+	Vector3 nY = { 0,1,0 };
+	Vector3 nZ = { 0,0,1 };
 
+	float dotX = Dot(nX, segment.diff);
+	float dotY = Dot(nY, segment.diff);
+	float dotZ = Dot(nZ, segment.diff);
+
+	//Vector3 dot = Add(segment.origin, segment.diff);
+
+	float txMin = (aabb.min.x - segment.origin.x) / dotX;
+	float txMax = (aabb.max.x - segment.origin.x) / dotX;
+
+	float tyMin = (aabb.min.y - segment.origin.y) / dotY;
+	float tyMax = (aabb.max.y - segment.origin.y) / dotY;
+
+	float tzMin = (aabb.min.z - segment.origin.z) / dotZ;
+	float tzMax = (aabb.max.z - segment.origin.z) / dotZ;
+
+
+	float tNearX = min(txMin, txMax);
+	float tFarX = max(txMin, txMax);
+
+	float tNearY = min(tyMin, tyMax);
+	float tFarY = max(tyMin, tyMax);
+
+	float tNearZ = min(tzMin, tzMax);
+	float tFarZ = max(tzMin, tzMax);
 
 	//AABBとの衝突点（貫通点）のtが小さい方
 	float tmin = max(max(tNearX, tNearY), tNearZ);
@@ -845,7 +870,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
 
 
-		if (isCollision(aabb,sphere))
+		if (isCollision(aabb,segment))
 		{
 			color1 = RED;
 		}
