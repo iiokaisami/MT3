@@ -767,11 +767,23 @@ bool isCollision(const AABB& aabb, const Segment segment)
 	float tNearZ = min(tzMin, tzMax);
 	float tFarZ = max(tzMin, tzMax);
 
+	
+
 	//AABBとの衝突点（貫通点）のtが小さい方
 	float tmin = max(max(tNearX, tNearY), tNearZ);
 
 	//AABBとの衝突点（貫通点）のtが大きい方
 	float tmax = min(min(tFarX, tFarY), tFarZ);
+	
+
+
+	if (txMax > INFINITY or txMin < -INFINITY or
+		tyMax > INFINITY or tyMin < -INFINITY or
+		tzMax > INFINITY or tzMin < -INFINITY)
+	{
+		return false;
+	}
+	
 
 	//衝突判定
 	if (tmin <= tmax)
