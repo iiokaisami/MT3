@@ -62,7 +62,10 @@ Matrix4x4 MakeRotateXMatrix(float radian)
 {
 	Matrix4x4 result;
 	result = {
-		1.0f, 0.0f, 0.0f, 0.0f, 0.0f, std::cos(radian), std::sin(radian), 0.0f, 0.0f, -std::sin(radian), std::cos(radian), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, std::cos(radian), std::sin(radian), 0.0f,
+		0.0f, -std::sin(radian), std::cos(radian), 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
 	};
 
 	return result;
@@ -73,7 +76,10 @@ Matrix4x4 MakeRotateYMatrix(float radian)
 {
 	Matrix4x4 result;
 	result = {
-		std::cos(radian), 0.0f, -std::sin(radian), 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, std::sin(radian), 0.0f, std::cos(radian), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		std::cos(radian), 0.0f, -std::sin(radian), 0.0f,
+		0.0f, 1.0f, 0.0f, 0.0f, 
+		std::sin(radian), 0.0f, std::cos(radian), 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
 	};
 
 	return result;
@@ -84,7 +90,10 @@ Matrix4x4 MakeRotateZMatrix(float radian)
 {
 	Matrix4x4 result;
 	result = {
-		std::cos(radian), std::sin(radian), 0.0f, 0.0f, -std::sin(radian), std::cos(radian), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		std::cos(radian), std::sin(radian), 0.0f, 0.0f,
+		-std::sin(radian), std::cos(radian), 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
 	};
 
 	return result;
@@ -783,12 +792,34 @@ bool isCollision(const AABB& aabb, const Segment segment)
 	{
 		return false;
 	}
+
+	/*if (std::isinf(txMax) or std::isinf(txMin) or
+		std::isinf(tyMax) or std::isinf(tyMin) or
+		std::isinf(tzMax) or std::isinf(tzMin))
+	{
+		return false;
+	}*/
 	
+
+	if (std::isnan(txMax) or std::isnan(txMin) or
+		std::isnan(tyMax) or std::isnan(tyMin) or
+		std::isnan(tzMax) or std::isnan(tzMin))
+	{
+		return false;
+	}
 
 	//衝突判定
 	if (tmin <= tmax)
 	{
-		return true;
+		if ((tmax <= 1 && tmax >= 0) or (tmin <= 1 && tmin >= 0))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		
 	}
 	else
 	{
