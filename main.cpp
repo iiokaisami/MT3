@@ -793,14 +793,6 @@ bool isCollision(const AABB& aabb, const Segment segment)
 		return false;
 	}
 
-	/*if (std::isinf(txMax) or std::isinf(txMin) or
-		std::isinf(tyMax) or std::isinf(tyMin) or
-		std::isinf(tzMax) or std::isinf(tzMin))
-	{
-		return false;
-	}*/
-	
-
 	if (std::isnan(txMax) or std::isnan(txMin) or
 		std::isnan(tyMax) or std::isnan(tyMin) or
 		std::isnan(tzMax) or std::isnan(tzMin))
@@ -812,6 +804,12 @@ bool isCollision(const AABB& aabb, const Segment segment)
 	if (tmin <= tmax)
 	{
 		if ((tmax <= 1 && tmax >= 0) or (tmin <= 1 && tmin >= 0))
+		{
+			return true;
+		}
+		else if ((tFarX >= 1 && tNearX <= 0) &&
+			(tFarY >= 1 && tNearY <= 0) &&
+			(tFarZ >= 1 && tNearZ <= 0))
 		{
 			return true;
 		}
@@ -924,7 +922,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		ImGui::Begin("window");
+		ImGui::Text("camera");
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+		ImGui::Text("setting");
 		ImGui::DragFloat3("aabb.min", &aabb.min.x, 0.01f);
 		ImGui::DragFloat3("aabb.max", &aabb.max.x, 0.01f);
 		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
