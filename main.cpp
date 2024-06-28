@@ -387,6 +387,12 @@ struct AABB
 	Vector3 max;//!< 最大点
 };
 
+struct OBB
+{
+	Vector3 center; //!<中心点
+	Vector3 orientations[3]; //!<座標軸。正規化・直交必須
+	Vector3 size; //!<座標軸方向の長さの半分。中心から面までの距離
+};
 
 ///////////色々/////////////
 
@@ -594,6 +600,87 @@ void DrawAABB(const AABB& aabb, const Matrix4x4& viewProjectionMatrix, const Mat
 
 }
 
+void DrawOBB(const OBB& obb, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color)
+{
+	//8頂点求める
+	Vector3 flontLeftUp{
+		obb.center.x - obb.size.x * obb.orientations[0].x,
+		obb.center.y + obb.size.y * obb.orientations[1].y,
+		obb.center.z - obb.size.z * obb.orientations[2].z };
+	Vector3 flontLeftUnder{
+		obb.center.x - obb.size.x * obb.orientations[0].x,
+		obb.center.y - obb.size.y * obb.orientations[1].y,
+		obb.center.z - obb.size.z * obb.orientations[2].z };
+	Vector3 flontRightUp{
+		obb.center.x + obb.size.x * obb.orientations[0].x,
+		obb.center.y + obb.size.y * obb.orientations[1].y,
+		obb.center.z - obb.size.z * obb.orientations[2].z };
+	Vector3 flontRightUnder{
+		obb.center.x + obb.size.x * obb.orientations[0].x,
+		obb.center.y - obb.size.y * obb.orientations[1].y,
+		obb.center.z - obb.size.z * obb.orientations[2].z };
+
+    flontLeftUp=Transform(flontLeftUp,)
+
+	Vector3 backLeftUp{
+		obb.center.x - obb.size.x * obb.orientations[0].x,
+		obb.center.y + obb.size.y * obb.orientations[1].y,
+		obb.center.z + obb.size.z * obb.orientations[2].z };
+	Vector3 backLeftUnder{
+		obb.center.x - obb.size.x * obb.orientations[0].x,
+		obb.center.y - obb.size.y * obb.orientations[1].y,
+		obb.center.z + obb.size.z * obb.orientations[2].z };
+	Vector3 backRightUp{
+		obb.center.x + obb.size.x * obb.orientations[0].x,
+		obb.center.y + obb.size.y * obb.orientations[1].y,
+		obb.center.z + obb.size.z * obb.orientations[2].z };
+	Vector3 backRightUnder{
+		obb.center.x + obb.size.x * obb.orientations[0].x,
+		obb.center.y - obb.size.y * obb.orientations[1].y,
+		obb.center.z + obb.size.z * obb.orientations[2].z };
+
+	//スクリーン座標に変換
+	Vector3 transform[8];
+	Vector3 screen[8];
+
+	transform[0] = Transform(flontLeftUp, viewProjectionMatrix);
+	transform[1] = Transform(flontLeftUnder, viewProjectionMatrix);
+	transform[2] = Transform(flontRightUp, viewProjectionMatrix);
+	transform[3] = Transform(flontRightUnder, viewProjectionMatrix);
+
+	transform[4] = Transform(backLeftUp, viewProjectionMatrix);
+	transform[5] = Transform(backLeftUnder, viewProjectionMatrix);
+	transform[6] = Transform(backRightUp, viewProjectionMatrix);
+	transform[7] = Transform(backRightUnder, viewProjectionMatrix);
+
+	screen[0] = Transform(transform[0], viewportMatrix);
+	screen[1] = Transform(transform[1], viewportMatrix);
+	screen[2] = Transform(transform[2], viewportMatrix);
+	screen[3] = Transform(transform[3], viewportMatrix);
+
+	screen[4] = Transform(transform[4], viewportMatrix);
+	screen[5] = Transform(transform[5], viewportMatrix);
+	screen[6] = Transform(transform[6], viewportMatrix);
+	screen[7] = Transform(transform[7], viewportMatrix);
+
+	//8頂点線で結ぶ
+	Novice::DrawLine((int)screen[0].x, (int)screen[0].y, (int)screen[1].x, (int)screen[1].y, color);
+	Novice::DrawLine((int)screen[0].x, (int)screen[0].y, (int)screen[2].x, (int)screen[2].y, color);
+	Novice::DrawLine((int)screen[0].x, (int)screen[0].y, (int)screen[4].x, (int)screen[4].y, color);
+
+	Novice::DrawLine((int)screen[6].x, (int)screen[6].y, (int)screen[2].x, (int)screen[2].y, color);
+	Novice::DrawLine((int)screen[6].x, (int)screen[6].y, (int)screen[4].x, (int)screen[4].y, color);
+	Novice::DrawLine((int)screen[6].x, (int)screen[6].y, (int)screen[7].x, (int)screen[7].y, color);
+
+	Novice::DrawLine((int)screen[5].x, (int)screen[5].y, (int)screen[1].x, (int)screen[1].y, color);
+	Novice::DrawLine((int)screen[5].x, (int)screen[5].y, (int)screen[4].x, (int)screen[4].y, color);
+	Novice::DrawLine((int)screen[5].x, (int)screen[5].y, (int)screen[7].x, (int)screen[7].y, color);
+
+	Novice::DrawLine((int)screen[3].x, (int)screen[3].y, (int)screen[1].x, (int)screen[1].y, color);
+	Novice::DrawLine((int)screen[3].x, (int)screen[3].y, (int)screen[2].x, (int)screen[2].y, color);
+	Novice::DrawLine((int)screen[3].x, (int)screen[3].y, (int)screen[7].x, (int)screen[7].y, color);
+}
+
 /////////////////////////////
 
 
@@ -755,7 +842,6 @@ bool isCollision(const AABB& aabb, const Segment segment)
 	float dotY = Dot(nY, segment.diff);
 	float dotZ = Dot(nZ, segment.diff);
 
-	//Vector3 dot = Add(segment.origin, segment.diff);
 
 	float txMin = (aabb.min.x - segment.origin.x) / dotX;
 	float txMax = (aabb.max.x - segment.origin.x) / dotX;
@@ -826,6 +912,22 @@ bool isCollision(const AABB& aabb, const Segment segment)
 
 }
 
+//OBB・球
+/*bool isCollision(const OBB& obb, const Sphere& sphere)
+{
+	Matrix4x4 obbWorldMatrix = MakeAffineMatrix(obb.size,obb.orientations[0],obb.)
+
+	Matrix4x4 obbWorldMatrixInverse = Inverse(obbWorldMatrix);
+
+	Vector3 centerInOBBLocalSpace =Transform(sphere.center, obbWorldMatrixInverse);
+
+	AABB aabbOBBLocal{ {obb.size.x * -1,obb.size.y * -1,obb.size.z * -1},obb.size };
+	Sphere sphereOBBLocal{ centerInOBBLocalSpace,sphere.radius };
+
+	//ローカル空間で衝突判定
+	isCollision(aabbOBBLocal, sphereOBBLocal);
+}*/
+
 /////////////////////////////
 
 const char kWindowTitle[] = "LC1A_01_イイオカ_イサミ_MT3_02_07_確認課題";
@@ -836,15 +938,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
-	AABB aabb
+	Vector3 rotate{ 0.0f,0.0f,0.0f };
+
+	OBB obb
 	{
-		.min{-0.5f,-0.5f,-0.5f},
-		.max{0.5f,0.5f,0.5f},
+		.center{-1.0f,0.0f,0.0f},
+		.orientations = {{1.0f,0.0f,0.0f},
+					   {0.0f,1.0f,0.0f},
+					   {0.0f,0.0f,1.0f}},
+		.size{0.5f,0.5f,0.5f}
 	};
 
-	Segment segment{
-		.origin{-0.7f,0.3f,0.0f},
-		.diff{2.0f,-0.5f,0.0f}
+	Sphere sphere
+	{
+		.center{0.0f,0.0f,0.0f},
+		.radius{0.5f}
 	};
 
 	uint32_t color1 = WHITE;
@@ -897,38 +1005,65 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			cameraTranslate.y -= cameraSpeed;
 		}
 
+
+		//回転行列を生成
+		Matrix4x4 rotateMatrix = Multiply(MakeRotateXMatrix(rotate.x), Multiply(MakeRotateYMatrix(rotate.y), MakeRotateZMatrix(rotate.z)));
+
+		//回転行列から軸を抽出
+		obb.orientations[0].x = rotateMatrix.m[0][0];
+		obb.orientations[0].y = rotateMatrix.m[0][1];
+		obb.orientations[0].z = rotateMatrix.m[0][2];
+
+		obb.orientations[1].x = rotateMatrix.m[1][0];
+		obb.orientations[1].y = rotateMatrix.m[1][1];
+		obb.orientations[1].z = rotateMatrix.m[1][2];
+
+		obb.orientations[2].x = rotateMatrix.m[2][0];
+		obb.orientations[2].y = rotateMatrix.m[2][1];
+		obb.orientations[2].z = rotateMatrix.m[2][2];
+
+		for (int i = 0; i < 3; i++)
+		{
+			obb.orientations[i] = Normalize(obb.orientations[i]);
+		}
+
+
 		Matrix4x4 cameraMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
-		aabb.min.x = (std::min)(aabb.min.x, aabb.min.x);
-		aabb.min.y = (std::min)(aabb.min.y, aabb.min.y);
-		aabb.min.z = (std::min)(aabb.min.z, aabb.min.z);
-		
-		Vector3 start = Transform(Transform(segment.origin, viewProjectionMatrix), viewportMatrix);
-		Vector3 end = Transform(Transform(Add(segment.origin, segment.diff), viewProjectionMatrix), viewportMatrix);
 
-
-		if (isCollision(aabb,segment))
+		/*if (isCollision(obb,sphere))
 		{
 			color1 = RED;
 		}
 		else
 		{
 			color1 = WHITE;
-		}
+		}*/
 
 
 		ImGui::Begin("window");
+		
 		ImGui::Text("camera");
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
+
 		ImGui::Text("setting");
-		ImGui::DragFloat3("aabb.min", &aabb.min.x, 0.01f);
-		ImGui::DragFloat3("aabb.max", &aabb.max.x, 0.01f);
-		ImGui::DragFloat3("Segment.Origin", &segment.origin.x, 0.01f);
-		ImGui::DragFloat3("Segment.Diff", &segment.diff.x, 0.01f);
+		
+		ImGui::DragFloat3("obb.center", &obb.center.x, 0.01f);
+		ImGui::DragFloat("rotateX", &rotate.x, 0.01f);
+		ImGui::DragFloat("rotateY", &rotate.y, 0.01f);
+		ImGui::DragFloat("rotateZ", &rotate.z, 0.01f);
+		ImGui::DragFloat3("obb.orientations[0]", &obb.orientations[0].x, 0.01f);
+		ImGui::DragFloat3("obb.orientations[1]", &obb.orientations[1].x, 0.01f);
+		ImGui::DragFloat3("obb.orientations[2]", &obb.orientations[2].x, 0.01f);
+		ImGui::DragFloat3("obb.size", &obb.size.x, 0.01f);
+
+		ImGui::DragFloat3("Sphere.Center", &sphere.center.x, 0.01f);
+		ImGui::DragFloat("Sphere.Radius", &sphere.radius, 0.01f);
+		
 		ImGui::End();
 
 		///
@@ -940,8 +1075,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		DrawAABB(aabb, viewProjectionMatrix, viewportMatrix, color1);
-		Novice::DrawLine((int)start.x, (int)start.y, (int)end.x, (int)end.y, color2);
+		DrawOBB(obb, viewProjectionMatrix, viewportMatrix, color1);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color2);
 
 		///
 		/// ↑描画処理ここまで
