@@ -36,6 +36,34 @@ Vector3 Multiply(float scalar, const Vector3& v)
 	return result;
 }
 
+// 行列の加法
+Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) 
+{
+	Matrix4x4 result;
+
+	for (int row = 0; row < 4; row++) {
+		for (int column = 0; column < 4; column++) {
+			result.m[row][column] = m1.m[row][column] + m2.m[row][column];
+		}
+	}
+
+	return result;
+}
+
+// 行列の減法
+Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) 
+{
+	Matrix4x4 result;
+
+	for (int row = 0; row < 4; row++) {
+		for (int column = 0; column < 4; column++) {
+			result.m[row][column] = m1.m[row][column] - m2.m[row][column];
+		}
+	}
+
+	return result;
+}
+
 // 行列の積
 Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2)
 {
@@ -386,6 +414,33 @@ struct AABB
 	Vector3 min;//!<最小点
 	Vector3 max;//!< 最大点
 };
+
+
+
+////演算子オーバーロード//////
+
+//二項演算子
+Vector3 operator+(const Vector3& v1, const Vector3& v2) { return Add(v1, v2); }
+Vector3 operator-(const Vector3& v1, const Vector3& v2) { return Subtract(v1, v2); }
+Vector3 operator*(float s, const Vector3& v) { return Multiply(s, v); }
+Vector3 operator*(const Vector3& v, float s) { return s * v; }
+Vector3 operator/(const Vector3& v, float s) { return Multiply(1.0f / s, v); }
+Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2) { return Add(m1, m2); }
+Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2) { return Subtract(m1, m2); }
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) { return Multiply(m1, m2); }
+
+//単項演算子
+Vector3 operator-(const Vector3& v) { return { -v.x,-v.y,-v.z }; }
+Vector3 operator+(const Vector3& v) { return v; }
+
+//複合代入演算子
+Vector3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
+Vector3& operator-=(const Vector3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
+Vector3& operator+=(const Vector3& v) { x += v.x; y += v.y; z += v.z; return *this; }
+Vector3& operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
+
+//////////////////////////////
+
 
 
 ///////////色々/////////////
@@ -892,45 +947,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
 
-	Vector3 translates[3] =
-	{
-		{0.2f,1.0f,0.0f},
-		{0.4f,0.0f,0.0f},
-		{0.3f,0.0f,0.0f},
-	};
-
-	Vector3 rotates[3] =
-	{
-		{0.0f,0.0f,-6.8f},
-		{0.0f,0.0f,-1.4f},
-		{0.0f,0.0f,0.0f},
-	};
-
-	Vector3 scales[3] =
-	{
-		{1.0f,1.0f,1.0f},
-		{1.0f,1.0f,1.0f},
-		{1.0f,1.0f,1.0f},
-	};
-
-	Sphere sphere[3] =
-	{
-		{{0,0,0},0.1f},
-		{{0,0,0},0.1f},
-		{{0,0,0},0.1f},
-	};
-
-	uint32_t color[3] =
-	{
-		RED,
-		GREEN,
-		BLUE,
-	};
-
-	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
-	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
-
-	float cameraSpeed = 0.01f;
+	
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -949,85 +966,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		if (keys[DIK_W])
-		{
-			cameraTranslate.z += cameraSpeed;
-		}
-		if (keys[DIK_S])
-		{
-			cameraTranslate.z -= cameraSpeed;
-		}
-		if (keys[DIK_A])
-		{
-			cameraTranslate.x -= cameraSpeed;
-		}
-		if (keys[DIK_D])
-		{
-			cameraTranslate.x += cameraSpeed;
-		}
-		if (keys[DIK_Q])
-		{
-			cameraTranslate.y += cameraSpeed;
-		}
-		if (keys[DIK_E])
-		{
-			cameraTranslate.y -= cameraSpeed;
-		}
-
-		Matrix4x4 cameraMatrix = MakeAffineMatrix({ 1.0f,1.0f,1.0f }, cameraRotate, cameraTranslate);
-		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
-		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
-		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
-
-
-		Matrix4x4 worldMatrix[3], localMatrix[3];
-		Vector3 linePoint[3];
-
-		for (int i = 0; i < 3; ++i)
-		{
-			localMatrix[i] = MakeAffineMatrix(scales[i], rotates[i], translates[i]);
-		}
-
-		worldMatrix[0] = localMatrix[0];
-		worldMatrix[1] = Multiply(localMatrix[1], localMatrix[0]);
-		worldMatrix[2] = Multiply(Multiply(localMatrix[2], localMatrix[1]), localMatrix[0]);
-
-		for (int i = 0; i < 3; ++i)
-		{
-			sphere[i].center = GetWorldPosition(worldMatrix[i]);
-
-			linePoint[i] = Transform(Transform(sphere[i].center, viewProjectionMatrix), viewportMatrix);
-		}
-
-
-		/*if (isCollision(aabb,segment))
-		{
-			color1 = RED;
-		}
-		else
-		{
-			color1 = WHITE;
-		}*/
-
-
 		ImGui::Begin("window");
-		ImGui::Text("camera");
-		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
-		ImGui::Text("setting");
-		
-		ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
-		ImGui::DragFloat3("rotates[0]", &rotates[0].x, 0.01f);
-		ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
-		
-		ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
-		ImGui::DragFloat3("rotates[1]", &rotates[1].x, 0.01f);
-		ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
 
-		ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
-		ImGui::DragFloat3("rotates[2]", &rotates[2].x, 0.01f);
-		ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
-		
+		ImGui::Text("camera");
+		ImGui::Text("setting");
+		ImGui::Text("setting");
+		ImGui::Text("setting");
+			
 		ImGui::End();
 
 		///
@@ -1037,17 +982,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
-
-		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		for (int i = 0; i < 3; ++i)
-		{
-			DrawSphere(sphere[i], viewProjectionMatrix, viewportMatrix, color[i]);
-		}
-
-		for (int i = 0; i < 2; ++i)
-		{
-			Novice::DrawLine((int)linePoint[i].x, (int)linePoint[i].y, (int)linePoint[i + 1].x, (int)linePoint[i + 1].y, WHITE);
-		}
 
 		///
 		/// ↑描画処理ここまで
