@@ -419,7 +419,6 @@ struct AABB
 
 ////演算子オーバーロード//////
 
-//二項演算子
 Vector3 operator+(const Vector3& v1, const Vector3& v2) { return Add(v1, v2); }
 Vector3 operator-(const Vector3& v1, const Vector3& v2) { return Subtract(v1, v2); }
 Vector3 operator*(float s, const Vector3& v) { return Multiply(s, v); }
@@ -428,16 +427,8 @@ Vector3 operator/(const Vector3& v, float s) { return Multiply(1.0f / s, v); }
 Matrix4x4 operator+(const Matrix4x4& m1, const Matrix4x4& m2) { return Add(m1, m2); }
 Matrix4x4 operator-(const Matrix4x4& m1, const Matrix4x4& m2) { return Subtract(m1, m2); }
 Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) { return Multiply(m1, m2); }
-
-//単項演算子
 Vector3 operator-(const Vector3& v) { return { -v.x,-v.y,-v.z }; }
 Vector3 operator+(const Vector3& v) { return v; }
-
-//複合代入演算子
-//Vector3& operator*=(float s) { x *= s; y *= s; z *= s; return *this; }
-//Vector3& operator-=(const Vector3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
-//Vector3& operator+=(const Vector3& v) { x += v.x; y += v.y; z += v.z; return *this; }
-//Vector3& operator/=(float s) { x /= s; y /= s; z /= s; return *this; }
 
 //////////////////////////////
 
@@ -1009,7 +1000,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			m2.m[1][0], m2.m[1][1], m2.m[1][2], m2.m[1][3],
 			m2.m[2][0], m2.m[2][1], m2.m[2][2], m2.m[2][3],
 			m2.m[3][0], m2.m[3][1], m2.m[3][2], m2.m[3][3]);
-
 		ImGui::Text("g:%f, %f, %f", g.x, g.y, g.z);
 		ImGui::Text("h:%f, %f, %f", h.x, h.y, h.z);
 			
