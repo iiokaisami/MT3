@@ -444,6 +444,19 @@ Vector3 Bezier(const Vector3& p0, const Vector3& p1, const Vector3& p2, float t)
 	return p;
 }
 
+Vector3 GetWorldPosition(Matrix4x4& worldMatrix)
+{
+	//ワールド座標を入れる変数
+	Vector3 worldPos;
+
+	//ワールド座標の平行移動成分を取得(ワールド座標)
+	worldPos.x = worldMatrix.m[3][0];
+	worldPos.y = worldMatrix.m[3][1];
+	worldPos.z = worldMatrix.m[3][2];
+
+	return worldPos;
+}
+
 /////////////////////////////
 
 
@@ -635,9 +648,6 @@ void DrawBezier(const Vector3& controlPoint0, const Vector3& controlPoint1, cons
 		Novice::DrawLine((int)screenB0.x, (int)screenB0.y, (int)screenB1.x, (int)screenB1.y, color);
 	}
 }
-	
-
-
 
 /////////////////////////////
 
@@ -881,23 +891,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
-	Vector3 controlPoints[3] =
+
+	Vector3 translates[3] =
 	{
-		{-0.8f,0.58f,1.0f},
-		{1.76f,1.0f,-0.3f},
-		{0.94f,-0.7f,2.3f},
+		{0.2f,1.0f,0.0f},
+		{0.4f,0.0f,0.0f},
+		{0.3f,0.0f,0.0f},
+	};
+
+	Vector3 rotates[3] =
+	{
+		{0.0f,0.0f,-6.8f},
+		{0.0f,0.0f,-1.4f},
+		{0.0f,0.0f,0.0f},
+	};
+
+	Vector3 scales[3] =
+	{
+		{1.0f,1.0f,1.0f},
+		{1.0f,1.0f,1.0f},
+		{1.0f,1.0f,1.0f},
 	};
 
 	Sphere sphere[3] =
 	{
-		{{0,0,0},0.01f},
-		{{0,0,0},0.01f},
-		{{0,0,0},0.01f},
+		{{0,0,0},0.1f},
+		{{0,0,0},0.1f},
+		{{0,0,0},0.1f},
 	};
 
-	uint32_t color1 = BLUE;
-	uint32_t color2 = BLACK;
-
+	uint32_t color[3] =
+	{
+		RED,
+		GREEN,
+		BLUE,
+	};
 
 	Vector3 cameraTranslate{ 0.0f,1.9f,-6.49f };
 	Vector3 cameraRotate{ 0.26f,0.0f,0.0f };
@@ -952,10 +980,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
+
+		Matrix4x4 worldMatrix[3], localMatrix[3];
+		Vector3 linePoint[3];
+
 		for (int i = 0; i < 3; ++i)
 		{
-			sphere[i].center = controlPoints[i];
+			localMatrix[i] = MakeAffineMatrix(scales[i], rotates[i], translates[i]);
 		}
+
+		worldMatrix[0] = localMatrix[0];
+		worldMatrix[1] = Multiply(localMatrix[1], localMatrix[0]);
+		worldMatrix[2] = Multiply(Multiply(localMatrix[2], localMatrix[1]), localMatrix[0]);
+
+		for (int i = 0; i < 3; ++i)
+		{
+			sphere[i].center = GetWorldPosition(worldMatrix[i]);
+
+			linePoint[i] = Transform(Transform(sphere[i].center, viewProjectionMatrix), viewportMatrix);
+		}
+
 
 		/*if (isCollision(aabb,segment))
 		{
@@ -971,9 +1015,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Text("camera");
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 		ImGui::Text("setting");
-		ImGui::DragFloat3("controlPoints[0]", &controlPoints[0].x, 0.01f);
-		ImGui::DragFloat3("controlPoints[1]", &controlPoints[1].x, 0.01f);
-		ImGui::DragFloat3("controlPoints[2]", &controlPoints[2].x, 0.01f);
+		
+		ImGui::DragFloat3("translates[0]", &translates[0].x, 0.01f);
+		ImGui::DragFloat3("rotates[0]", &rotates[0].x, 0.01f);
+		ImGui::DragFloat3("scales[0]", &scales[0].x, 0.01f);
+		
+		ImGui::DragFloat3("translates[1]", &translates[1].x, 0.01f);
+		ImGui::DragFloat3("rotates[1]", &rotates[1].x, 0.01f);
+		ImGui::DragFloat3("scales[1]", &scales[1].x, 0.01f);
+
+		ImGui::DragFloat3("translates[2]", &translates[2].x, 0.01f);
+		ImGui::DragFloat3("rotates[2]", &rotates[2].x, 0.01f);
+		ImGui::DragFloat3("scales[2]", &scales[2].x, 0.01f);
+		
 		ImGui::End();
 
 		///
@@ -985,10 +1039,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		DrawBezier(controlPoints[0], controlPoints[1], controlPoints[2], viewProjectionMatrix, viewportMatrix, color1);
 		for (int i = 0; i < 3; ++i)
 		{
-			DrawSphere(sphere[i], viewProjectionMatrix, viewportMatrix, color2);
+			DrawSphere(sphere[i], viewProjectionMatrix, viewportMatrix, color[i]);
+		}
+
+		for (int i = 0; i < 2; ++i)
+		{
+			Novice::DrawLine((int)linePoint[i].x, (int)linePoint[i].y, (int)linePoint[i + 1].x, (int)linePoint[i + 1].y, WHITE);
 		}
 
 		///
