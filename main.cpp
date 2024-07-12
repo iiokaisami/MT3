@@ -963,37 +963,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
-	Spring spring
-	{
-		{0.0f,1.0f,0.0f},
-		0.7f,
-		100.0f,
-		2.0f
-	};
-
-	Ball ball
-	{
-		{0.8f,0.2f,0.0f},
-		{0,0,0},
-		{0,0,0},
-		2.0f,
-		0.05f,
-		BLUE
-	};
-
 	Sphere sphere
 	{
 		{0,0,0},
-		0.0f
+		0.08f
 	};
 
-	Vector3 linePoint[2] =
-	{
-		{0,0,0},
-		{0,0,0}
-	};
+	Vector3 center = { 1.0f,0,0};
 
-	const Vector3 kGravity{ 0.0f,-9.8f,0.0f };
+	unsigned int color = WHITE;
+
+	float angularVelocity = 3.14f;
+	float angle = 0.0f;
 	float deltaTime = 1.0f / 60.0f;
 
 	bool isStart = false;
@@ -1053,29 +1034,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
-		sphere.center = ball.position;
-		sphere.radius = ball.radius;
+	
+		angle += angularVelocity * deltaTime;
+	
 
-		Vector3 diff = ball.position - spring.anchor;
-		float length = Length(diff);
-		if (length != 0.0f && isStart)
-		{
-			Vector3 direction = Normalize(diff);
-			Vector3 restPosition = spring.anchor + direction * spring.naturalLength;
-			Vector3 displacement = length * (ball.position - restPosition);
-			Vector3 restoringForce = -spring.stiffness * displacement;
-			// 減衰抵抗を計算する
-			Vector3 dampingForce = -spring.dampingCoefficient * ball.velocity;
-			// 減衰抵抗も加味して、物体にかかる力を決定する
-			Vector3 force = restoringForce + dampingForce;
-			ball.acceleration = force / ball.mass + kGravity;
-		}
-
-		ball.velocity = ball.velocity + ball.acceleration * deltaTime;
-		ball.position = ball.position + ball.velocity * deltaTime;
-
-		linePoint[0] = Transform(Transform({ 0,1.0f,0 }, viewProjectionMatrix), viewportMatrix);
-		linePoint[1] = Transform(Transform(sphere.center, viewProjectionMatrix), viewportMatrix);
+		sphere.center.x = center.x + std::cos(angle) * sphere.radius;
+		sphere.center.y = center.y + std::sin(angle) * sphere.radius;
+		sphere.center.z = center.z;
 
 
 		ImGui::Begin("window");
@@ -1103,8 +1068,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
-		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, ball.color);
-		Novice::DrawLine((int)linePoint[0].x, (int)linePoint[0].y, (int)linePoint[1].x, (int)linePoint[1].y, WHITE);
+		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color);
 
 		///
 		/// ↑描画処理ここまで
