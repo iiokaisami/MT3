@@ -992,13 +992,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0,0,0}
 	};
 
-	Vector3 center = { 0.0f,0,0};
-	float radius = 1.0f;
-
 	unsigned int color = WHITE;
 
-	float angularVelocity = 3.14f;
-	float angle = 0.0f;
 	float deltaTime = 1.0f / 60.0f;
 
 	bool isStart = false;
@@ -1058,21 +1053,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
-		pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sin(pendulum.angle);
-		pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
-		pendulum.angle += pendulum.angularVelocity * deltaTime;
-	
 		if (isStart)
 		{
-			angle += angularVelocity * deltaTime;
+			pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sin(pendulum.angle);
 		}
-	
-		linePoint[0] = Transform(Transform({ 0,0,0 }, viewProjectionMatrix), viewportMatrix);
-		linePoint[1] = Transform(Transform(sphere.center, viewProjectionMatrix), viewportMatrix);
+		pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
+		pendulum.angle += pendulum.angularVelocity * deltaTime;
+		
 
-		sphere.center.x = center.x + std::cos(angle) * radius;
-		sphere.center.y = center.y + std::sin(angle) * radius;
-		sphere.center.z = center.z;
+		sphere.center.x = pendulum.anchor.x + std::sin(pendulum.angle) * pendulum.length;
+		sphere.center.y = pendulum.anchor.y - std::cos(pendulum.angle) * pendulum.length;
+		sphere.center.z = pendulum.anchor.z;
+
+		linePoint[0] = Transform(Transform({ 0,1.2f,0 }, viewProjectionMatrix), viewportMatrix);
+		linePoint[1] = Transform(Transform(sphere.center, viewProjectionMatrix), viewportMatrix);
 
 
 		ImGui::Begin("window");
