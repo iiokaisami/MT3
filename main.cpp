@@ -965,15 +965,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Spring spring
 	{
-		{0.0f,0.0f,0.0f},
-		1.0f,
+		{0.0f,1.0f,0.0f},
+		0.7f,
 		100.0f,
 		2.0f
 	};
 
 	Ball ball
 	{
-		{1.2f,0.0f,0.0f},
+		{0.8f,0.2f,0.0f},
 		{0,0,0},
 		{0,0,0},
 		2.0f,
@@ -993,6 +993,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0,0,0}
 	};
 
+	const Vector3 kGravity{ 0.0f,-9.8f,0.0f };
 	float deltaTime = 1.0f / 60.0f;
 
 	bool isStart = false;
@@ -1067,13 +1068,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Vector3 dampingForce = -spring.dampingCoefficient * ball.velocity;
 			// 減衰抵抗も加味して、物体にかかる力を決定する
 			Vector3 force = restoringForce + dampingForce;
-			ball.acceleration = force / ball.mass;
+			ball.acceleration = force / ball.mass + kGravity;
 		}
 
 		ball.velocity = ball.velocity + ball.acceleration * deltaTime;
 		ball.position = ball.position + ball.velocity * deltaTime;
 
-		linePoint[0] = Transform(Transform({ 0,0,0 }, viewProjectionMatrix), viewportMatrix);
+		linePoint[0] = Transform(Transform({ 0,1.0f,0 }, viewProjectionMatrix), viewportMatrix);
 		linePoint[1] = Transform(Transform(sphere.center, viewProjectionMatrix), viewportMatrix);
 
 
@@ -1085,13 +1086,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Text("setting");
 		
-		//ImGui::Checkbox("start", &isStart);
 		if (ImGui::Button("start"))
 		{
 			isStart = true;
 		}
 
-		ImGui::DragFloat3("a", &linePoint[0].x, 1.0f);
 
 		ImGui::End();
 
@@ -1105,7 +1104,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, ball.color);
-		Novice::DrawLine((int)linePoint[0].x, 0, (int)linePoint[1].x, (int)linePoint[1].y, WHITE);
+		Novice::DrawLine((int)linePoint[0].x, (int)linePoint[0].y, (int)linePoint[1].x, (int)linePoint[1].y, WHITE);
 
 		///
 		/// ↑描画処理ここまで
