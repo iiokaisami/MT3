@@ -1085,7 +1085,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Text("setting");
 		
-		ImGui::Checkbox("start", &isStart);
+		//ImGui::Checkbox("start", &isStart);
+		if (ImGui::Button("start"))
+		{
+			isStart = true;
+		}
 
 		ImGui::DragFloat3("a", &linePoint[0].x, 1.0f);
 
