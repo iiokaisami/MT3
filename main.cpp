@@ -969,7 +969,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.08f
 	};
 
-	Vector3 center = { 1.0f,0,0};
+	Vector3 center = { 0.0f,0,0};
+	float radius = 1.0f;
 
 	unsigned int color = WHITE;
 
@@ -1035,11 +1036,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
 	
-		angle += angularVelocity * deltaTime;
+		if (isStart)
+		{
+			angle += angularVelocity * deltaTime;
+		}
 	
 
-		sphere.center.x = center.x + std::cos(angle) * sphere.radius;
-		sphere.center.y = center.y + std::sin(angle) * sphere.radius;
+		sphere.center.x = center.x + std::cos(angle) * radius;
+		sphere.center.y = center.y + std::sin(angle) * radius;
 		sphere.center.z = center.z;
 
 
