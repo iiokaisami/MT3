@@ -366,6 +366,14 @@ struct Ball
 	unsigned int color;   // ボールの色
 };
 
+struct Pendulum
+{
+	Vector3 anchor;            // アンカーポイント。固定された端の位置
+	float length;              // 紐の長さ
+	float angle;               // 現在の角度
+	float angularVelocity;     // 各速度μ
+	float angularAcceleration; // 角加速度
+};
 
 ////演算子オーバーロード//////
 
@@ -963,10 +971,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
+	Pendulum pendulum
+	{
+		{0,1.0f,0},
+		0.8f,
+		0.7f,
+		0,
+		0
+	};
+
 	Sphere sphere
 	{
 		{0,0,0},
 		0.08f
+	};
+
+	Vector3 linePoint[2] =
+	{
+		{0,0,0},
+		{0,0,0}
 	};
 
 	Vector3 center = { 0.0f,0,0};
@@ -1035,12 +1058,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
+		pendulum.angularAcceleration = -(9.8f / pendulum.length) * std::sin(pendulum.angle);
+		pendulum.angularVelocity += pendulum.angularAcceleration * deltaTime;
+		pendulum.angle += pendulum.angularVelocity * deltaTime;
 	
 		if (isStart)
 		{
 			angle += angularVelocity * deltaTime;
 		}
 	
+		linePoint[0] = Transform(Transform({ 0,0,0 }, viewProjectionMatrix), viewportMatrix);
+		linePoint[1] = Transform(Transform(sphere.center, viewProjectionMatrix), viewportMatrix);
 
 		sphere.center.x = center.x + std::cos(angle) * radius;
 		sphere.center.y = center.y + std::sin(angle) * radius;
@@ -1073,6 +1101,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color);
+		Novice::DrawLine((int)linePoint[0].x, (int)linePoint[0].y, (int)linePoint[1].x, (int)linePoint[1].y, color);
+
 
 		///
 		/// ↑描画処理ここまで
