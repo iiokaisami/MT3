@@ -1085,13 +1085,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Text("setting");
 		
-		//ImGui::Checkbox("start", &isStart);
 		if (ImGui::Button("start"))
 		{
 			isStart = true;
 		}
-
-		ImGui::DragFloat3("a", &linePoint[0].x, 1.0f);
 
 		ImGui::End();
 
@@ -1105,7 +1102,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, ball.color);
-		Novice::DrawLine((int)linePoint[0].x, (int)linePoint[0].x, (int)linePoint[1].x, (int)linePoint[1].y, WHITE);
+		Novice::DrawLine((int)linePoint[0].x, (int)linePoint[0].y, (int)linePoint[1].x, (int)linePoint[1].y, WHITE);
 
 		///
 		/// ↑描画処理ここまで
