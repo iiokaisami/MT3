@@ -1105,7 +1105,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, ball.color);
-		Novice::DrawLine((int)linePoint[0].x, (int)linePoint[0].x, (int)linePoint[1].x, (int)linePoint[1].y, WHITE);
+		Novice::DrawLine((int)linePoint[0].x, 0, (int)linePoint[1].x, (int)linePoint[1].y, WHITE);
 
 		///
 		/// ↑描画処理ここまで
