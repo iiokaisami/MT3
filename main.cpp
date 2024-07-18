@@ -1085,7 +1085,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("CameraRotate", &cameraRotate.x, 0.01f);
 
 		ImGui::Text("setting");
-		
 		if (ImGui::Button("start"))
 		{
 			isStart = true;
