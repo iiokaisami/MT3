@@ -384,6 +384,12 @@ struct ConicalPendulum
 	float angularVelocity; // 角速度μ
 };
 
+struct  Capsule
+{
+	Segment segment;
+	float radiuse;
+};
+
 ////演算子オーバーロード//////
 
 Vector3 operator+(const Vector3& v1, const Vector3& v2) { return Add(v1, v2); }
@@ -468,6 +474,49 @@ Vector3 GetWorldPosition(Matrix4x4& worldMatrix)
 	worldPos.z = worldMatrix.m[3][2];
 
 	return worldPos;
+}
+
+Vector3 Reflect(const Vector3& input, const Vector3& normal)
+{
+	Vector3 result, A;
+
+	A = 2 * (Dot(input, normal) * normal);
+	result = input - A;
+
+	return result;
+}
+
+bool isCapsule(const Capsule& capsule , const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix)
+{
+	// d =始点
+ 	// ba =終点 
+	Vector3 start = Transform(Transform(capsule.segment.origin, viewProjectionMatrix), viewportMatrix);
+	Vector3 end = Transform(Transform(Add(capsule.segment.origin, capsule.segment.diff), viewProjectionMatrix), viewportMatrix);
+
+
+	float l = sqrtf(powf(end.x, 2) + powf(end.y, 2));
+	Vector3 e = end;
+
+	if (l != 0)
+	{
+		e = end / l;
+
+	}
+
+	float t = Dot(start, e) / l;
+	t = std::clamp(t, 0.0f, 1.0f);
+	Vector3 f = { (1.0f - t) * b1.pos.x + t * b2.pos.x,(1.0f - t) * b1.pos.y + t * b2.pos.y };
+
+	Vector3 cf = { b.pos.x - f.x,b.pos.y - f.y };
+	float dis = sqrtf(Dot(cf, cf));
+	if (dis <= b.rad + b1.rad)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 /////////////////////////////
@@ -980,13 +1029,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, 1280, 720);
 
-	ConicalPendulum conicalPendulum
+	Plane plane
 	{
-		{0,1.0f,0},
-		0.8f,
-		0.7f,
-		0,
-		0
+		Normalize({-0.2f,0.9f,-0.3f}),
+		0.0f
+	};
+
+	Ball ball
+	{
+		{0.8f,1.2f,0.3f},
+		{0,0,0},
+		{0,0,0},
+		2.0f,
+		0.05f,
+		WHITE
 	};
 
 	Sphere sphere
@@ -995,11 +1051,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.08f
 	};
 
-	Vector3 linePoint[2] =
-	{
-		{0,0,0},
-		{0,0,0}
-	};
+	float e = 0.8f;
 
 	unsigned int color = WHITE;
 
@@ -1063,17 +1115,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
 		
-		conicalPendulum.angularVelocity = std::sqrt(9.8f / (conicalPendulum.length * std::cos(conicalPendulum.halfApexAngle)));
-		conicalPendulum.angle = conicalPendulum.angle + conicalPendulum.angularVelocity * deltaTime;
-		
-		float radius = std::sin(conicalPendulum.halfApexAngle) * conicalPendulum.length;
-		float height = std::cos(conicalPendulum.halfApexAngle) * conicalPendulum.length;
-		sphere.center.x = conicalPendulum.anchor.x + std::cos(conicalPendulum.angle) * radius;
-		sphere.center.y = conicalPendulum.anchor.y - height;
-		sphere.center.z = conicalPendulum.anchor.z - std::sin(conicalPendulum.angle) * radius;
+		if (isStart)
+		{
+			ball.acceleration = { 0,-9.8f,0 };
+		}
 
-		linePoint[0] = Transform(Transform({ 0,1.2f,0 }, viewProjectionMatrix), viewportMatrix);
-		linePoint[1] = Transform(Transform(sphere.center, viewProjectionMatrix), viewportMatrix);
+		ball.velocity = ball.velocity + ball.acceleration * deltaTime;
+		ball.position = ball.position + ball.velocity * deltaTime;
+
+		sphere.center = ball.position;
+		sphere.radius = ball.radius;
+
+		if (isCollision(sphere, plane))
+		{
+			Vector3 reflected = Reflect(ball.velocity, plane.normal);
+			Vector3 projectToNormal = Project(reflected, plane.normal);
+			Vector3 movingrection = reflected - projectToNormal;
+			ball.velocity = projectToNormal * e + movingrection;
+		}
 
 
 		ImGui::Begin("window");
@@ -1102,7 +1161,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		DrawGrid(viewProjectionMatrix, viewportMatrix);
 		DrawSphere(sphere, viewProjectionMatrix, viewportMatrix, color);
-		Novice::DrawLine((int)linePoint[0].x, (int)linePoint[0].y, (int)linePoint[1].x, (int)linePoint[1].y, color);
+		DrawPlane(plane, viewProjectionMatrix, viewportMatrix, color);
 
 
 		///
