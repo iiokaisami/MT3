@@ -486,8 +486,23 @@ Vector3 Reflect(const Vector3& input, const Vector3& normal)
 	return result;
 }
 
-bool isCapsule(const Capsule& capsule , const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix)
+bool isCapsule(const Ball& ball,const Capsule& capsule)
 {
+	Vector3 end = capsule.segment.origin + capsule.segment.diff;
+
+	Vector3 proja = Project(ball.position - capsule.segment.origin, end - capsule.segment.origin);
+	Vector3 vector = ball.position - proja;
+
+	if (Length(vector) < capsule.radiuse)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+	/*
 	// d =始点
  	// ba =終点 
 	Vector3 start = Transform(Transform(capsule.segment.origin, viewProjectionMatrix), viewportMatrix);
@@ -517,6 +532,7 @@ bool isCapsule(const Capsule& capsule , const Matrix4x4& viewProjectionMatrix, c
 	{
 		return false;
 	}
+	*/
 }
 
 /////////////////////////////
@@ -1031,7 +1047,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Plane plane
 	{
-		Normalize({-0.2f,0.9f,-0.3f}),
+		Normalize({-0.2f,1.2f,-0.3f}),
 		0.0f
 	};
 
@@ -1043,6 +1059,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		2.0f,
 		0.05f,
 		WHITE
+	};
+
+	Capsule capsule
+	{
+		{{0,0,0},
+		{0,0,0}},
+		0
 	};
 
 	Sphere sphere
@@ -1114,10 +1137,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
-		
+
+		Vector3 beforePos = ball.position;
+		//capsule.segment.origin=
+		//capsule.radiuse = ball.radius;
+
 		if (isStart)
 		{
 			ball.acceleration = { 0,-9.8f,0 };
+		}
+		else
+		{
+			ball =
+			{
+				{0.8f,1.2f,0.3f},
+				{0,0,0},
+				{0,0,0},
+				2.0f,
+				0.05f,
+				WHITE
+			};
 		}
 
 		ball.velocity = ball.velocity + ball.acceleration * deltaTime;
@@ -1132,6 +1171,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Vector3 projectToNormal = Project(reflected, plane.normal);
 			Vector3 movingrection = reflected - projectToNormal;
 			ball.velocity = projectToNormal * e + movingrection;
+			/*if (!isCapsule(ball, capsule))
+			{
+				ball.position = beforePos;
+			}*/
 		}
 
 
@@ -1145,7 +1188,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 		if (ImGui::Button("start"))
 		{
-			isStart = true;
+			if (!isStart)
+			{
+				isStart = true;
+			}
+			else
+			{
+				isStart = false;
+			}
 		}
 
 
