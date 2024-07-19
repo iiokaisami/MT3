@@ -1062,8 +1062,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 		Matrix4x4 viewportMatrix = MakeViewportMatrix(0, 0, (float)kWindowWidth, (float)kWindowHeight, 0.0f, 1.0f);
 
-		
-		conicalPendulum.angularVelocity = std::sqrt(9.8f / (conicalPendulum.length * std::cos(conicalPendulum.halfApexAngle)));
+		if (isStart)
+		{
+			conicalPendulum.angularVelocity = std::sqrt(9.8f / (conicalPendulum.length * std::cos(conicalPendulum.halfApexAngle)));
+		}
+		else
+		{
+			conicalPendulum =
+			{
+				{0,1.0f,0},
+				0.8f,
+				0.7f,
+				0,
+				0
+			};
+
+			sphere.center = conicalPendulum.anchor;
+		}
 		conicalPendulum.angle = conicalPendulum.angle + conicalPendulum.angularVelocity * deltaTime;
 		
 		float radius = std::sin(conicalPendulum.halfApexAngle) * conicalPendulum.length;
@@ -1086,7 +1101,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 		if (ImGui::Button("start"))
 		{
-			isStart = true;
+			if (!isStart)
+			{
+				isStart = true;
+			}
+			else
+			{
+				isStart = false;
+			}
 		}
 
 
