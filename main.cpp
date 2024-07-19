@@ -384,12 +384,6 @@ struct ConicalPendulum
 	float angularVelocity; // 角速度μ
 };
 
-struct  Capsule
-{
-	Segment segment;
-	float radiuse;
-};
-
 ////演算子オーバーロード//////
 
 Vector3 operator+(const Vector3& v1, const Vector3& v2) { return Add(v1, v2); }
@@ -484,39 +478,6 @@ Vector3 Reflect(const Vector3& input, const Vector3& normal)
 	result = input - A;
 
 	return result;
-}
-
-bool isCapsule(const Capsule& capsule , const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix)
-{
-	// d =始点
- 	// ba =終点 
-	Vector3 start = Transform(Transform(capsule.segment.origin, viewProjectionMatrix), viewportMatrix);
-	Vector3 end = Transform(Transform(Add(capsule.segment.origin, capsule.segment.diff), viewProjectionMatrix), viewportMatrix);
-
-
-	float l = sqrtf(powf(end.x, 2) + powf(end.y, 2));
-	Vector3 e = end;
-
-	if (l != 0)
-	{
-		e = end / l;
-
-	}
-
-	float t = Dot(start, e) / l;
-	t = std::clamp(t, 0.0f, 1.0f);
-	Vector3 f = { (1.0f - t) * b1.pos.x + t * b2.pos.x,(1.0f - t) * b1.pos.y + t * b2.pos.y };
-
-	Vector3 cf = { b.pos.x - f.x,b.pos.y - f.y };
-	float dis = sqrtf(Dot(cf, cf));
-	if (dis <= b.rad + b1.rad)
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
 }
 
 /////////////////////////////
@@ -1119,6 +1080,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			ball.acceleration = { 0,-9.8f,0 };
 		}
+		else
+		{
+			ball =
+			{
+				{0.8f,1.2f,0.3f},
+				{0,0,0},
+				{0,0,0},
+				2.0f,
+				0.05f,
+				WHITE
+			};
+		}
 
 		ball.velocity = ball.velocity + ball.acceleration * deltaTime;
 		ball.position = ball.position + ball.velocity * deltaTime;
@@ -1145,7 +1118,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 		if (ImGui::Button("start"))
 		{
-			isStart = true;
+			if (!isStart)
+			{
+				isStart = true;
+			}
+			else
+			{
+				isStart = false;
+			}
 		}
 
 
