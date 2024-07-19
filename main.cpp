@@ -1074,7 +1074,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		0.08f
 	};
 
-	float e = 0.8f;
+	float e = 0.6f;
 
 	unsigned int color = WHITE;
 
@@ -1198,6 +1198,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+		ImGui::DragFloat("e", &e, 0.1f, 0, 1.0f);
 
 		ImGui::End();
 
